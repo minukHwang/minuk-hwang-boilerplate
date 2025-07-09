@@ -1,0 +1,68 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# 커밋 메시지 파일 읽기
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# 커밋 메시지가 없으면 종료
+if [[ -z "$COMMIT_MSG" ]]; then
+  exit 0
+fi
+
+# 커밋 메시지에서 type 추출 (feat:, fix:, docs: 등)
+COMMIT_TYPE=$(echo "$COMMIT_MSG" | sed -n 's/^\([a-z]*\):.*/\1/p')
+
+# type에 따른 이모지 매핑
+case $COMMIT_TYPE in
+  feat)
+    EMOJI="✨"
+    ;;
+  fix)
+    EMOJI="🐛"
+    ;;
+  hotfix)
+    EMOJI="🚨"
+    ;;
+  refactor)
+    EMOJI="♻️"
+    ;;
+  docs)
+    EMOJI="📝"
+    ;;
+  style)
+    EMOJI="💄"
+    ;;
+  test)
+    EMOJI="🧪"
+    ;;
+  chore)
+    EMOJI="🔧"
+    ;;
+  perf)
+    EMOJI="⚡"
+    ;;
+  ci)
+    EMOJI="👷"
+    ;;
+  build)
+    EMOJI="📦"
+    ;;
+  release)
+    EMOJI="🚀"
+    ;;
+  revert)
+    EMOJI="⏪"
+    ;;
+  wip)
+    EMOJI="🚧"
+    ;;
+  *)
+    EMOJI="📌"
+    ;;
+esac
+
+# 이모지가 이미 있는지 확인하고 없으면 추가
+if [[ ! "$COMMIT_MSG" =~ ^[[:space:]]*[[:print:]]*[[:space:]]*$ ]]; then
+  echo "$EMOJI $COMMIT_MSG" > "$COMMIT_MSG_FILE"
+fi 
