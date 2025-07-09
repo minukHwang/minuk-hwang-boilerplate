@@ -57,6 +57,9 @@ case $COMMIT_TYPE in
   wip)
     EMOJI="🚧"
     ;;
+  init)
+    EMOJI="🎉"
+    ;;
   *)
     EMOJI="📌"
     ;;
