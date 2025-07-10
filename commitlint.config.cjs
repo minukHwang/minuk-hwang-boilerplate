@@ -1,29 +1,29 @@
 module.exports = {
   extends: ['@commitlint/config-conventional', 'gitmoji'],
   rules: {
-    // 허용되는 커밋 타입 정의 (기존 유지)
+    // Define allowed commit types
     'type-enum': [
       2, // error level
       'always',
       [
-        'feat',     // 새로운 기능
-        'fix',      // 버그 수정
-        'docs',     // 문서 수정
-        'style',    // 코드 스타일 변경 (기능에 영향 없음)
-        'refactor', // 코드 리팩토링
-        'perf',     // 성능 개선
-        'test',     // 테스트 추가/수정
-        'build',    // 빌드 시스템 변경
-        'ci',       // CI/CD 설정 변경
-        'chore',    // 기타 작업
-        'revert',   // 이전 커밋 되돌리기
-        'init',     // 초기 설정
+        'feat',     // new feature
+        'fix',      // bug fix
+        'docs',     // documentation changes
+        'style',    // code style changes (no impact on functionality)
+        'refactor', // code refactoring
+        'perf',     // performance improvements
+        'test',     // test additions/modifications
+        'build',    // build system changes
+        'ci',       // CI/CD configuration changes
+        'chore',    // other tasks
+        'revert',   // revert previous commit
+        'init',     // initial setup
       ],
     ],
-    'subject-case': [0], // subject 대소문자 규칙 비활성화 (이모지 사용 가능)
-    'subject-empty': [2, 'never'], // subject가 비어있으면 에러
-    'type-empty': [2, 'never'],    // type이 비어있으면 에러
-    'start-with-gitmoji': [2, 'always'], // gitmoji로 시작하는 커밋 메시지 강제
+    'subject-case': [0], // disable subject case rules (allow emoji usage)
+    'subject-empty': [0], // allow empty subject (due to gitmoji code)
+    'type-empty': [0],    // allow empty type (due to gitmoji code)
+    'start-with-gitmoji': [2, 'always'], // enforce gitmoji at the beginning
   },
   prompt: {
     questions: {

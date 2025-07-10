@@ -4,7 +4,7 @@
 MSG_FILE=$1
 MSG=$(cat "$MSG_FILE")
 
-# 이미 gitmoji 코드가 있으면 패스
+# Skip if gitmoji code already exists
 if ! echo "$MSG" | grep -qE '^:[a-z_]+:'; then
   if echo "$MSG" | grep -q '^feat'; then
     sed -i '' '1s/^/:sparkles: /' "$MSG_FILE"
