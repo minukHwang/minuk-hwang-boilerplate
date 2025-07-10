@@ -65,7 +65,5 @@ case $COMMIT_TYPE in
     ;;
 esac
 
-# 이모지가 이미 있는지 확인하고 없으면 추가
-if [[ ! "$COMMIT_MSG" =~ ^[[:space:]]*[[:print:]]*[[:space:]]*$ ]]; then
-  echo "$EMOJI $COMMIT_MSG" > "$COMMIT_MSG_FILE"
-fi 
+# 항상 이모지 추가
+echo "$EMOJI $COMMIT_MSG" > "$COMMIT_MSG_FILE" 

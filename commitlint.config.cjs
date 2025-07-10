@@ -19,5 +19,8 @@ module.exports = {
         'init',
       ],
     ],
+    'subject-case': [0],
+    'subject-empty': [0],
+    'type-empty': [0],
   },
 };
