@@ -1,69 +1,34 @@
-#!/usr/bin/env sh
+#!/bin/sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# 커밋 메시지 파일 읽기
-COMMIT_MSG_FILE=$1
-COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+MSG_FILE=$1
+MSG=$(cat "$MSG_FILE")
 
-# 커밋 메시지가 없으면 종료
-if [[ -z "$COMMIT_MSG" ]]; then
-  exit 0
-fi
-
-# 커밋 메시지에서 type 추출 (feat:, fix:, docs: 등)
-COMMIT_TYPE=$(echo "$COMMIT_MSG" | sed -n 's/^\([a-z]*\):.*/\1/p')
-
-# type에 따른 이모지 매핑
-case $COMMIT_TYPE in
-  feat)
-    EMOJI="✨"
-    ;;
-  fix)
-    EMOJI="🐛"
-    ;;
-  hotfix)
-    EMOJI="🚨"
-    ;;
-  refactor)
-    EMOJI="♻️"
-    ;;
-  docs)
-    EMOJI="📝"
-    ;;
-  style)
-    EMOJI="💄"
-    ;;
-  test)
-    EMOJI="🧪"
-    ;;
-  chore)
-    EMOJI="🔧"
-    ;;
-  perf)
-    EMOJI="⚡"
-    ;;
-  ci)
-    EMOJI="👷"
-    ;;
-  build)
-    EMOJI="📦"
-    ;;
-  release)
-    EMOJI="🚀"
-    ;;
-  revert)
-    EMOJI="⏪"
-    ;;
-  wip)
-    EMOJI="🚧"
-    ;;
-  init)
-    EMOJI="🎉"
-    ;;
-  *)
-    EMOJI="📌"
-    ;;
-esac
-
-# 항상 이모지 추가
-echo "$EMOJI $COMMIT_MSG" > "$COMMIT_MSG_FILE" 
+# 이미 gitmoji 코드가 있으면 패스
+if ! echo "$MSG" | grep -qE '^:[a-z_]+:'; then
+  if echo "$MSG" | grep -q '^feat'; then
+    sed -i '' '1s/^/:sparkles: /' "$MSG_FILE"
+  elif echo "$MSG" | grep -q '^fix'; then
+    sed -i '' '1s/^/:bug: /' "$MSG_FILE"
+  elif echo "$MSG" | grep -q '^docs'; then
+    sed -i '' '1s/^/:books: /' "$MSG_FILE"
+  elif echo "$MSG" | grep -q '^style'; then
+    sed -i '' '1s/^/:art: /' "$MSG_FILE"
+  elif echo "$MSG" | grep -q '^refactor'; then
+    sed -i '' '1s/^/:package: /' "$MSG_FILE"
+  elif echo "$MSG" | grep -q '^perf'; then
+    sed -i '' '1s/^/:zap: /' "$MSG_FILE"
+  elif echo "$MSG" | grep -q '^test'; then
+    sed -i '' '1s/^/:rotating_light: /' "$MSG_FILE"
+  elif echo "$MSG" | grep -q '^build'; then
+    sed -i '' '1s/^/:hammer: /' "$MSG_FILE"
+  elif echo "$MSG" | grep -q '^ci'; then
+    sed -i '' '1s/^/:link: /' "$MSG_FILE"
+  elif echo "$MSG" | grep -q '^chore'; then
+    sed -i '' '1s/^/:memo: /' "$MSG_FILE"
+  elif echo "$MSG" | grep -q '^revert'; then
+    sed -i '' '1s/^/:wastebasket: /' "$MSG_FILE"
+  elif echo "$MSG" | grep -q '^init'; then
+    sed -i '' '1s/^/:tada: /' "$MSG_FILE"
+  fi
+fi 
