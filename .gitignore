@@ -39,6 +39,9 @@ pnpm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Boilerplate sync backups
+.boilerplate-backup-*
+
 # IDE
 .vscode/
 .idea/
