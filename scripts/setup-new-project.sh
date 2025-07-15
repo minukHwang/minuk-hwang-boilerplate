@@ -47,13 +47,25 @@ config_files=(
     "tsconfig.json"
     "next.config.mjs"
     ".gitignore"
+    "package.json"
 )
+
+# package.json이 없으면 boilerplate의 것을 복사
+if [ ! -f "package.json" ]; then
+    echo -e "${YELLOW}⚠️  package.json이 없으므로 boilerplate의 package.json을 복사합니다.${NC}"
+    cp boilerplate/package.json .
+    echo -e "${BLUE}💡 package.json의 name, description을 프로젝트에 맞게 수정하세요.${NC}"
+fi
 
 # Copy each file
 for file in "${config_files[@]}"; do
     if [ -f "boilerplate/$file" ]; then
         echo -e "${GREEN}📄 Copying $file...${NC}"
         cp "boilerplate/$file" .
+    fi
+    # package.json은 위에서 처리
+    if [ "$file" = "package.json" ]; then
+        continue
     fi
 done
 

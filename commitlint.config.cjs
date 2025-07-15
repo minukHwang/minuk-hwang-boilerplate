@@ -43,12 +43,12 @@ module.exports = {
           docs: {
             description: 'Updating documentation, comments, or README files',
             title: 'Documentation',
-            emoji: '📚',
+            emoji: '📄',
           },
           style: {
             description: 'Formatting code, fixing whitespace, or adjusting styling without changing functionality',
             title: 'Styles',
-            emoji: '💎',
+            emoji: '🎨',
           },
           refactor: {
             description: 'Restructuring existing code to improve readability or maintainability',
@@ -68,12 +68,12 @@ module.exports = {
           build: {
             description: 'Modifying build tools, dependencies, or deployment configuration',
             title: 'Builds',
-            emoji: '🛠',
+            emoji: '🔨',
           },
           ci: {
             description: 'Updating continuous integration workflows, GitHub Actions, or deployment scripts',
             title: 'Continuous Integrations',
-            emoji: '🔗',
+            emoji: '🔧',
           },
           chore: {
             description: 'Routine maintenance tasks, dependency updates, or configuration changes',

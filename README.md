@@ -33,7 +33,7 @@ A modern Next.js 14 boilerplate with React 18, TypeScript, Vanilla Extract, pnpm
 
    ```bash
    # Download the setup script
-   curl -O https://raw.githubusercontent.com/your-username/minuk-hwang-boilerplate/main/scripts/setup-new-project.sh
+   curl -O https://raw.githubusercontent.com/minukHwang/minuk-hwang-boilerplate/master/scripts/setup-new-project.sh
    chmod +x setup-new-project.sh
 
    # Run the setup script
@@ -41,7 +41,7 @@ A modern Next.js 14 boilerplate with React 18, TypeScript, Vanilla Extract, pnpm
    ```
 
 3. **Follow the prompts and complete setup:**
-   - Enter the boilerplate repository URL
+   - Enter the boilerplate repository URL (https://github.com/minukHwang/minuk-hwang-boilerplate.git)
    - Update package.json with required scripts and dependencies
    - Install dependencies
    - Test the setup
@@ -224,15 +224,3 @@ git commit -m "feat: add new feature"
     └── workflows/
         └── sync-boilerplate.yml
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Commit with gitmoji
-5. Submit a pull request
-
-## License
-
-MIT License

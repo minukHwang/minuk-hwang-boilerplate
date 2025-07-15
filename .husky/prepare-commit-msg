@@ -11,19 +11,19 @@ if ! echo "$MSG" | grep -qE '^:[a-z_]+:'; then
   elif echo "$MSG" | grep -q '^fix'; then
     sed -i '' '1s/^/:bug: /' "$MSG_FILE"
   elif echo "$MSG" | grep -q '^docs'; then
-    sed -i '' '1s/^/:books: /' "$MSG_FILE"
+    sed -i '' '1s/^/:page_facing_up: /' "$MSG_FILE"
   elif echo "$MSG" | grep -q '^style'; then
     sed -i '' '1s/^/:art: /' "$MSG_FILE"
   elif echo "$MSG" | grep -q '^refactor'; then
     sed -i '' '1s/^/:package: /' "$MSG_FILE"
   elif echo "$MSG" | grep -q '^perf'; then
-    sed -i '' '1s/^/:zap: /' "$MSG_FILE"
+    sed -i '' '1s/^/:rocket: /' "$MSG_FILE"
   elif echo "$MSG" | grep -q '^test'; then
     sed -i '' '1s/^/:rotating_light: /' "$MSG_FILE"
   elif echo "$MSG" | grep -q '^build'; then
     sed -i '' '1s/^/:hammer: /' "$MSG_FILE"
   elif echo "$MSG" | grep -q '^ci'; then
-    sed -i '' '1s/^/:link: /' "$MSG_FILE"
+    sed -i '' '1s/^/:wrench: /' "$MSG_FILE"
   elif echo "$MSG" | grep -q '^chore'; then
     sed -i '' '1s/^/:memo: /' "$MSG_FILE"
   elif echo "$MSG" | grep -q '^revert'; then
