@@ -11,175 +11,72 @@ A modern Next.js 14 boilerplate with React 18, TypeScript, Vanilla Extract, pnpm
 - **pnpm** for fast package management
 - **ESLint + Prettier** for code quality
 - **Husky** for Git hooks
-- **commitlint** with gitmoji support
+- **commitlint** for checking commit message rules
 - **React Query** for server state management
 - **Auto-emoji commits** with gitmoji integration
 
+---
+
 ## Getting Started
 
-### For New Projects
-
-#### Method 1: Automated Setup (Recommended)
-
-1. **Create a new directory and initialize git:**
-
-   ```bash
-   mkdir my-new-project
-   cd my-new-project
-   git init
-   ```
-
-2. **Download and run the setup script:**
-
-   ```bash
-   # Download the setup script
-   curl -O https://raw.githubusercontent.com/minukHwang/minuk-hwang-boilerplate/master/scripts/setup-new-project.sh
-   chmod +x setup-new-project.sh
-
-   # Run the setup script
-   ./setup-new-project.sh
-   ```
-
-3. **Follow the prompts and complete setup:**
-   - Enter the boilerplate repository URL (https://github.com/minukHwang/minuk-hwang-boilerplate.git)
-   - Update package.json with required scripts and dependencies
-   - Install dependencies
-   - Test the setup
-
-#### Method 2: Manual Setup
-
-1. **Clone this repository as a template:**
-
-   ```bash
-   git clone <boilerplate-repo-url> my-new-project
-   cd my-new-project
-   rm -rf .git
-   git init
-   ```
-
-2. **Customize the project:**
-
-   ```bash
-   # Update package.json name and description
-   # Remove boilerplate-specific files
-   # Add your own source code
-   ```
-
-3. **Install dependencies:**
-   ```bash
-   pnpm install
-   ```
-
-#### Method 3: GitHub Template
-
-1. **Use this repository as a GitHub template**
-2. **Click "Use this template" on GitHub**
-3. **Create a new repository from the template**
-
-### For Existing Projects
+### 1-1. Start a New Project
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd minuk-hwang-boilerplate
-
-# Install dependencies
+git clone https://github.com/minukHwang/minuk-hwang-boilerplate.git my-new-project
+cd my-new-project
+rm -rf .git
+git init
 pnpm install
-
-# Start development server
-pnpm dev
 ```
 
-## Boilerplate Synchronization
+- The `src/` directory is managed by you and never overwritten by sync.
+- All config files can always be kept up-to-date with the boilerplate.
 
-This boilerplate is designed to be easily synchronized with new projects. Here are several approaches:
+---
 
-### Method 1: Git Submodule (Recommended)
+### 1-2. Add Boilerplate to Existing Project
 
-1. **Add as submodule to your project:**
+If you want to apply this boilerplate to an existing project:
 
-   ```bash
-   git submodule add <boilerplate-repo-url> boilerplate
-   ```
-
-2. **Update boilerplate in your project:**
-
-   ```bash
-   git submodule update --remote boilerplate
-   ```
-
-3. **Apply changes to your project:**
-   ```bash
-   # Copy updated files from boilerplate
-   cp -r boilerplate/. .
-   # Review and commit changes
-   git add .
-   git commit -m "feat: sync with latest boilerplate"
-   ```
-
-### Method 2: Template Repository
-
-1. **Use this as a GitHub template repository**
-2. **Create new projects from template**
-3. **Manual sync when needed**
-
-### Method 3: Automated Sync Script
-
-Create a sync script that automatically pulls and applies boilerplate updates:
+#### Add boilerplate as submodule
 
 ```bash
-#!/bin/bash
-# sync-boilerplate.sh
-
-echo "🔄 Syncing with boilerplate..."
-
-# Pull latest changes
-git submodule update --remote boilerplate
-
-# Copy configuration files
-cp boilerplate/commitlint.config.cjs .
-cp boilerplate/.husky/* .husky/
-cp boilerplate/.eslintrc.json .
-cp boilerplate/.prettierrc .
-cp boilerplate/tsconfig.json .
-
-# Update package.json scripts and devDependencies
-# (Manual review required)
-
-echo "✅ Boilerplate sync completed!"
-echo "⚠️  Please review changes before committing"
+git submodule add https://github.com/minukHwang/minuk-hwang-boilerplate.git boilerplate
 ```
 
-### Method 4: GitHub Actions for Auto-Sync
+---
 
-Create a GitHub Action that automatically syncs when boilerplate is updated:
+### 2. Manual Sync/Update Command
 
-```yaml
-# .github/workflows/sync-boilerplate.yml
-name: Sync Boilerplate
-
-on:
-  schedule:
-    - cron: '0 0 * * 0' # Weekly
-  workflow_dispatch: # Manual trigger
-
-jobs:
-  sync:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-
-      - name: Update submodule
-        run: |
-          git submodule update --remote boilerplate
-          git config --global user.name 'GitHub Action'
-          git config --global user.email 'action@github.com'
-          git add boilerplate
-          git commit -m "feat: update boilerplate submodule" || exit 0
-          git push
+```bash
+pnpm sync:boilerplate
+# or
+./scripts/sync-boilerplate.sh
 ```
+
+- Config files are automatically copied/overwritten.
+- For `package.json`, you will see a diff and can choose to merge automatically (no jq required).
+- A backup of your previous `package.json` is always created before merging.
+
+#### Sync Options
+
+You can also choose what to sync:
+
+```bash
+# Full sync (config files + package.json) - default
+./scripts/sync-boilerplate.sh
+
+# Update configuration files only
+./scripts/sync-boilerplate.sh --config-only
+
+# Update package.json only
+./scripts/sync-boilerplate.sh --package-only
+
+# Show help
+./scripts/sync-boilerplate.sh --help
+```
+
+---
 
 ## Development Workflow
 
@@ -207,20 +104,43 @@ git commit -m "feat: add new feature"
 - `revert` - Revert previous commits
 - `init` - Initial setup
 
+---
+
 ## Project Structure
 
 ```
 ├── src/
-│   └── app/           # Next.js App Router
-├── .husky/            # Git hooks
-├── commitlint.config.cjs  # Commit message rules
-├── .eslintrc.json     # ESLint configuration
-├── .prettierrc        # Prettier configuration
-├── tsconfig.json      # TypeScript configuration
-├── scripts/           # Utility scripts
-│   ├── setup-new-project.sh
-│   └── sync-boilerplate.sh
-└── .github/           # GitHub Actions
-    └── workflows/
-        └── sync-boilerplate.yml
+├── .husky/
+├── commitlint.config.cjs
+├── .eslintrc.json
+├── .prettierrc
+├── tsconfig.json
+├── scripts/
+│   ├── sync-boilerplate.sh
+│   └── merge-package.js
+└── boilerplate/   # submodule
 ```
+
+---
+
+## FAQ
+
+- **Q. Why is `src/` never synced?**  
+  A. Your business logic and code should be managed independently. The boilerplate only manages config and tooling.
+
+- **Q. What if package.json merging causes issues?**  
+  A. A backup is always created before merging, so you can easily restore your previous state.
+
+- **Q. How do I restore from backup?**  
+  A. Backups are stored in `.boilerplate-backup-YYYYMMDD-HHMMSS/` folders. To restore:
+
+  ```bash
+  # Restore all files from a specific backup
+  cp .boilerplate-backup-20241201-143022/* .
+
+  # Or restore specific files
+  cp .boilerplate-backup-20241201-143022/package.json .
+  cp .boilerplate-backup-20241201-143022/.eslintrc.json .
+  ```
+
+---
