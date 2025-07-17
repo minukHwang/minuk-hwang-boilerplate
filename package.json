@@ -10,7 +10,8 @@
     "format": "prettier --write .",
     "type-check": "tsc --noEmit",
     "prepare": "husky",
-    "sync:boilerplate": "./scripts/sync-boilerplate.sh"
+    "sync:boilerplate": "./scripts/sync-boilerplate.sh",
+    "sync:to-boilerplate": "./scripts/sync-to-boilerplate.sh"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

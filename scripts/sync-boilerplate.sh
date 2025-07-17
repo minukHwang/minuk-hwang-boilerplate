@@ -1,55 +1,48 @@
 #!/bin/bash
 
-# Boilerplate Synchronization Script
-# This script helps sync your project with the latest boilerplate changes
+# Boilerplate Synchronization Script (git diff/merge, auto file discovery, with options)
+# Supports: --all-merge, --file <filename>, --help
 
 set -e
 
-# Parse command line options
-CONFIG_ONLY=false
-PACKAGE_ONLY=false
+# --- Option parsing ---
+ALL_MERGE=false
+ONLY_FILE=""
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --config-only)
-      CONFIG_ONLY=true
+    --all-merge)
+      ALL_MERGE=true
       shift
       ;;
-    --package-only)
-      PACKAGE_ONLY=true
-      shift
+    --file)
+      ONLY_FILE="$2"
+      shift 2
       ;;
     --help|-h)
-      echo "Usage: $0 [OPTIONS]"
-      echo ""
-      echo "Options:"
-      echo "  --config-only    Update configuration files only (no package.json merge)"
-      echo "  --package-only   Update package.json only (no config files)"
-      echo "  --help, -h       Show this help message"
-      echo ""
-      echo "Examples:"
-      echo "  $0               # Full sync (config files + package.json)"
-      echo "  $0 --config-only # Update config files only"
-      echo "  $0 --package-only # Update package.json only"
+      echo "Usage: $0 [--all-merge] [--file <filename>]"
+      echo "  --all-merge         Merge/copy all files without prompts."
+      echo "  --file <filename>   Only sync/merge the specified file or directory."
+      echo "  --help, -h          Show this help message."
       exit 0
       ;;
     *)
       echo "Unknown option: $1"
-      echo "Use --help for usage information"
+      echo "Use --help for usage information."
       exit 1
       ;;
   esac
 done
 
-# Auto-add submodule
+# Auto-add submodule if not present
 if [ ! -d "boilerplate" ]; then
     echo "Boilerplate submodule not found. Adding automatically."
     git submodule add https://github.com/minukHwang/minuk-hwang-boilerplate.git boilerplate
 fi
 
-echo "🔄 Starting boilerplate synchronization..."
+echo "🔄 Starting boilerplate synchronization (git diff/merge)..."
 
-# Colors for output
+# Output color variables
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -64,116 +57,134 @@ if [ ! -d "boilerplate" ]; then
     exit 1
 fi
 
-# Update boilerplate submodule
+# Update boilerplate submodule to latest commit
 echo -e "${BLUE}📥 Updating boilerplate submodule...${NC}"
 git submodule update --remote boilerplate
 
-# Check if there are any changes
-if git diff --quiet boilerplate; then
-    echo -e "${GREEN}✅ Boilerplate is already up to date!${NC}"
-    exit 0
-fi
-
-echo -e "${YELLOW}🚧 Changes detected in boilerplate.${NC}"
-
-# Update configuration files (only if not --package-only)
-if [ "$PACKAGE_ONLY" = false ]; then
-    echo -e "${BLUE}📋 Files that will be updated:${NC}"
-
-    # List files that will be copied
-    echo "Configuration files:"
-    ls -la boilerplate/ | grep -E '\.(json|cjs|rc|ignore)$' || true
-
-    echo -e "\n${YELLOW}🔧 Copying configuration files...${NC}"
-
-    # Copy configuration files (with backup)
-    backup_dir=".boilerplate-backup-$(date +%Y%m%d-%H%M%S)"
-    mkdir -p "$backup_dir"
-
-    # Pass backup directory path via environment variable
-    export BOILERPLATE_BACKUP_DIR="$backup_dir"
-
-    # List of files to sync
-    config_files=(
-        "commitlint.config.cjs"
-        ".eslintrc.json"
-        ".prettierrc"
-        ".prettierignore"
-        ".eslintignore"
-        "tsconfig.json"
-        "next.config.mjs"
-    )
-
-    # Copy each file with backup
-    for file in "${config_files[@]}"; do
-        if [ -f "boilerplate/$file" ]; then
-            if [ -f "$file" ]; then
-                echo -e "${BLUE}📄 Backing up $file...${NC}"
-                cp "$file" "$backup_dir/"
-            fi
-            echo -e "${GREEN}📋 Copying $file...${NC}"
-            cp "boilerplate/$file" .
+# --- Root files sync/merge ---
+for file in $(ls -A boilerplate); do
+    if [ -f "boilerplate/$file" ]; then
+        # --file 옵션 처리
+        if [ -n "$ONLY_FILE" ] && [ "$file" != "$ONLY_FILE" ]; then
+            continue
         fi
-    done
-
-    # Copy husky hooks
-    if [ -d "boilerplate/.husky" ]; then
-        echo -e "${BLUE}📄 Backing up .husky directory...${NC}"
-        if [ -d ".husky" ]; then
-            cp -r .husky "$backup_dir/"
-        fi
-        echo -e "${GREEN}📋 Copying .husky hooks...${NC}"
-        cp -r boilerplate/.husky .
-
-        # Make hooks executable
-        chmod +x .husky/*
-    fi
-fi
-
-# Update package.json (only if not --config-only)
-if [ "$CONFIG_ONLY" = false ]; then
-    # Package.json merge guidance and Node.js script execution
-    if [ -f "boilerplate/package.json" ] && [ -f "package.json" ]; then
-        echo -e "\n${YELLOW}🚧 You can merge scripts, dependencies, devDependencies, and peerDependencies from boilerplate to package.json.${NC}"
-        echo -e "${BLUE}📄 Enter 'n' to see diff only, or 'y' for automatic merge.${NC}"
-        read -p "Auto merge (y/n)? " yn
-        if [ "$yn" = "y" ]; then
-            node ./scripts/merge-package.js
-        else
-            # Check diff package and execute
-            if node -e "require('diff')" &> /dev/null; then
-                echo -e "${BLUE}📊 package.json diff (scripts):${NC}"
-                node -e "const a=require('./package.json').scripts,b=require('./boilerplate/package.json').scripts;console.log(require('diff').createTwoFilesPatch('package.json','boilerplate/package.json',JSON.stringify(a,null,2),JSON.stringify(b,null,2)));" || true
-                echo -e "${BLUE}📊 package.json diff (dependencies):${NC}"
-                node -e "const a=require('./package.json').dependencies,b=require('./boilerplate/package.json').dependencies;console.log(require('diff').createTwoFilesPatch('package.json','boilerplate/package.json',JSON.stringify(a,null,2),JSON.stringify(b,null,2)));" || true
-                echo -e "${BLUE}📊 package.json diff (devDependencies):${NC}"
-                node -e "const a=require('./package.json').devDependencies,b=require('./boilerplate/package.json').devDependencies;console.log(require('diff').createTwoFilesPatch('package.json','boilerplate/package.json',JSON.stringify(a,null,2),JSON.stringify(b,null,2)));" || true
-                echo -e "${BLUE}📊 package.json diff (peerDependencies):${NC}"
-                node -e "const a=require('./package.json').peerDependencies,b=require('./boilerplate/package.json').peerDependencies;console.log(require('diff').createTwoFilesPatch('package.json','boilerplate/package.json',JSON.stringify(a,null,2),JSON.stringify(b,null,2)));" || true
+        if [ -f "$file" ]; then
+            echo -e "${BLUE}📝 $file diff:${NC}"
+            git diff --no-index "boilerplate/$file" "$file" || true
+            if [ "$ALL_MERGE" = true ]; then
+                git merge-file "$file" "$file" "boilerplate/$file"
+                echo -e "${GREEN}🔀 $file merged!${NC}"
+                echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
             else
-                echo -e "${YELLOW}🚧 diff package not found. Please compare package.json manually.${NC}"
-                echo -e "${BLUE}📄 Please compare boilerplate/package.json and package.json.${NC}"
-                echo -e "${BLUE}📄 Or install diff package with 'pnpm add -D diff' and try again.${NC}"
+                read -p "🤔 merge? (y/n): " yn
+                if [ "$yn" = "y" ]; then
+                    git merge-file "$file" "$file" "boilerplate/$file"
+                    echo -e "${GREEN}🔀 $file merged!${NC}"
+                    echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
+                else
+                    echo -e "${YELLOW}⏭️ $file skipped${NC}"
+                fi
+            fi
+        else
+            # Always prompt before copying, even with --all-merge
+            read -p "🆕 copy $file from boilerplate? (y/n): " yn
+            if [ "$yn" = "y" ]; then
+                cp "boilerplate/$file" .
+                echo -e "${GREEN}🆕 $file copied from boilerplate${NC}"
+            else
+                echo -e "${YELLOW}⏭️ $file copy skipped${NC}"
             fi
         fi
-    elif [ -f "boilerplate/package.json" ]; then
-        echo -e "\n${YELLOW}🚧 package.json not found. Please create package.json first.${NC}"
-    else
-        echo -e "\n${YELLOW}🚧 boilerplate/package.json not found.${NC}"
     fi
+    # Files only in your project but not in boilerplate are warned below
+    # (see below)
+done
+
+# --- Directory sync/merge (from boilerplate-sync-dirs.txt) ---
+sync_dirs=()
+if [ -f "scripts/boilerplate-sync-dirs.txt" ]; then
+  while IFS= read -r line; do
+    [[ -z "$line" || "$line" =~ ^# ]] && continue
+    sync_dirs+=("$line")
+  done < scripts/boilerplate-sync-dirs.txt
 fi
 
-echo -e "\n${GREEN}✅ Boilerplate synchronization completed!${NC}"
-if [ "$PACKAGE_ONLY" = false ]; then
-    echo -e "${YELLOW}📁 Backup created in: $backup_dir${NC}"
+for dir in "${sync_dirs[@]}"; do
+  if [ -d "boilerplate/$dir" ]; then
+    # --file 옵션 처리 (디렉토리 이름이 정확히 일치할 때만)
+    if [ -n "$ONLY_FILE" ] && [ "$dir" != "$ONLY_FILE" ]; then
+      continue
+    fi
+    echo -e "\n${BLUE}🔄 Syncing $dir directory...${NC}"
+    mkdir -p "$dir"
+    for file in $(ls -A "boilerplate/$dir"); do
+      if [ -f "boilerplate/$dir/$file" ]; then
+        if [ -f "$dir/$file" ]; then
+          echo -e "${BLUE}📝 $dir/$file diff:${NC}"
+          git diff --no-index "boilerplate/$dir/$file" "$dir/$file" || true
+          if [ "$ALL_MERGE" = true ]; then
+            git merge-file "$dir/$file" "$dir/$file" "boilerplate/$dir/$file"
+            echo -e "${GREEN}🔀 $dir/$file merged!${NC}"
+            echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
+          else
+            read -p "🤔 merge $dir/$file? (y/n): " yn
+            if [ "$yn" = "y" ]; then
+              git merge-file "$dir/$file" "$dir/$file" "boilerplate/$dir/$file"
+              echo -e "${GREEN}🔀 $dir/$file merged!${NC}"
+              echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
+            else
+              echo -e "${YELLOW}⏭️ $dir/$file skipped${NC}"
+            fi
+          fi
+        else
+          # Always prompt before copying, even with --all-merge
+          read -p "🆕 copy $dir/$file from boilerplate? (y/n): " yn
+          if [ "$yn" = "y" ]; then
+            cp "boilerplate/$dir/$file" "$dir/"
+            echo -e "${GREEN}🆕 $dir/$file copied from boilerplate${NC}"
+          else
+            echo -e "${YELLOW}⏭️ $dir/$file copy skipped${NC}"
+          fi
+        fi
+      fi
+    done
+  fi
+done
+
+# Warn about config files that exist in your project but not in boilerplate
+extra_files=()
+for file in $(ls -A); do
+    if [ -f "$file" ] && [ ! -f "boilerplate/$file" ]; then
+        # Only warn for config files (filter by extension/name as needed)
+        case "$file" in
+            .gitignore|commitlint.config.cjs|.eslintrc.json|.prettierrc|.prettierignore|.eslintignore|tsconfig.json|next.config.mjs|package.json)
+                extra_files+=("$file")
+                ;;
+        esac
+    fi
+done
+if [ ${#extra_files[@]} -gt 0 ]; then
+    echo -e "\n${YELLOW}🚧 There are config files in your project that do not exist in boilerplate:${NC}"
+    for file in "${extra_files[@]}"; do
+        echo "  - $file"
+    done
+    echo -e "${YELLOW}These files are not synced with boilerplate. Add them to boilerplate or manage them manually if needed.${NC}"
 fi
-echo -e "${YELLOW}🚧 Please review changes before committing${NC}"
+
+echo -e "\n${GREEN}✅ Boilerplate git diff/merge sync complete!${NC}"
+echo -e "${YELLOW}💾 Please git add/commit the changed/merged files.${NC}"
 echo -e "${BLUE}💡 Next steps:${NC}"
-echo "   1. Review the copied files"
-echo "   2. Update package.json if needed"
-echo "   3. Test your application"
-echo "   4. Commit changes: git add . && git commit -m 'feat: sync with latest boilerplate'"
+echo "   1. 🚧 If there are conflicts, resolve them manually."
+echo "   2. 💾 git add . && git commit -m 'chore: merge boilerplate config files'"
+echo "   3. 🚀 Test and create a PR"
 
-# Optional: Show git status
-echo -e "\n${BLUE}📊 Current git status:${NC}"
-git status --porcelain || true 
+read -p "💾 Do you want to git add/commit/push the changes now? (y/n): " yn
+echo ""
+if [ "$yn" = "y" ]; then
+  echo -e "${GREEN}▶️ Run the following commands to commit and push your changes:${NC}"
+  echo "git add ."
+  echo "git commit -m 'chore: merge boilerplate config files'"
+  echo "git push"
+else
+  echo -e "${YELLOW}⏭️ Skipped git commit/push.${NC}"
+fi 

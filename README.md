@@ -30,7 +30,7 @@ pnpm install
 ```
 
 - The `src/` directory is managed by you and never overwritten by sync.
-- All config files can always be kept up-to-date with the boilerplate.
+- All config and tool files/directories can always be kept up-to-date with the boilerplate.
 
 ---
 
@@ -54,26 +54,45 @@ pnpm sync:boilerplate
 ./scripts/sync-boilerplate.sh
 ```
 
-- Config files are automatically copied/overwritten.
-- For `package.json`, you will see a diff and can choose to merge automatically (no jq required).
-- A backup of your previous `package.json` is always created before merging.
+- All config files and tool directories (like `.husky`, `scripts`, etc.) are interactively compared and merged using git diff/merge.
+- For each file, you will see a diff and can choose to merge, skip, or copy new files.
+- No files or directories are overwritten without your explicit confirmation.
+- The list of directories to sync is managed in `scripts/boilerplate-sync-dirs.txt` (one per line).
+- You can add more directories (e.g. `.github`, `.vscode`) to this file to enable syncing them as well.
 
-#### Sync Options
+#### Example: Add a new directory to sync
 
-You can also choose what to sync:
+Edit `scripts/boilerplate-sync-dirs.txt` and add the directory name:
+
+```
+.husky
+scripts
+.github
+.vscode
+```
+
+---
+
+### 3. Reverse Sync (Project → Boilerplate)
+
+You can also sync your local changes back to the boilerplate submodule:
 
 ```bash
-# Full sync (config files + package.json) - default
-./scripts/sync-boilerplate.sh
+pnpm sync:to-boilerplate
+# or
+./scripts/sync-to-boilerplate.sh
+```
 
-# Update configuration files only
-./scripts/sync-boilerplate.sh --config-only
+- This will compare your project files and directories to the boilerplate submodule and let you merge/copy changes back.
+- Reverse sync is always interactive: for every file, you will be prompted to merge or copy (no --all-merge option, for safety).
+- Supports the following option:
+  - `--file <filename>`: Only sync/merge the specified file or directory
+- At the end, you will be prompted whether to commit and push the changes in the boilerplate submodule. If you answer yes, the script will print the recommended git commands for you to run.
 
-# Update package.json only
-./scripts/sync-boilerplate.sh --package-only
+#### Example: Reverse sync only a specific file
 
-# Show help
-./scripts/sync-boilerplate.sh --help
+```bash
+pnpm sync:to-boilerplate --file .eslintrc.json
 ```
 
 ---
@@ -117,7 +136,9 @@ git commit -m "feat: add new feature"
 ├── tsconfig.json
 ├── scripts/
 │   ├── sync-boilerplate.sh
-│   └── merge-package.js
+│   ├── sync-to-boilerplate.sh
+│   ├── boilerplate-sync-dirs.txt
+│   └── ...
 └── boilerplate/   # submodule
 ```
 
@@ -125,22 +146,19 @@ git commit -m "feat: add new feature"
 
 ## FAQ
 
-- **Q. Why is `src/` never synced?**  
-  A. Your business logic and code should be managed independently. The boilerplate only manages config and tooling.
+- **Q. How are config/tool files and directories synced?**  
+  A. The sync scripts interactively compare each file using git diff/merge. You can choose to merge, skip, or copy new files. No files are overwritten without your confirmation.
+
+- **Q. How do I add a new directory to sync?**  
+  A. Add the directory name to `scripts/boilerplate-sync-dirs.txt` (one per line).
 
 - **Q. What if package.json merging causes issues?**  
-  A. A backup is always created before merging, so you can easily restore your previous state.
+  A. You will see a diff and can choose to merge or skip. If you merge and there are issues, you can always restore from git history.
+
+- **Q. How do I commit and push changes after sync?**  
+  A. At the end of each sync script, you will be prompted whether to commit and push the changes. If you answer yes, the script will print the recommended git commands for you to run.
 
 - **Q. How do I restore from backup?**  
-  A. Backups are stored in `.boilerplate-backup-YYYYMMDD-HHMMSS/` folders. To restore:
-
-  ```bash
-  # Restore all files from a specific backup
-  cp .boilerplate-backup-20241201-143022/* .
-
-  # Or restore specific files
-  cp .boilerplate-backup-20241201-143022/package.json .
-  cp .boilerplate-backup-20241201-143022/.eslintrc.json .
-  ```
+  A. (If you use a backup system, describe it here. Otherwise, use git to restore previous versions.)
 
 ---
