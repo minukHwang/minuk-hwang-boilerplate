@@ -69,6 +69,12 @@ for file in $(ls -A boilerplate); do
             continue
         fi
         if [ -f "$file" ]; then
+            # Check for diff
+            git diff --no-index --quiet "boilerplate/$file" "$file"
+            if [ $? -eq 0 ]; then
+                echo -e "${YELLOW}⏭️ $file: no changes, skipping.${NC}"
+                continue
+            fi
             echo -e "${BLUE}📝 $file diff:${NC}"
             git diff --no-index "boilerplate/$file" "$file" || true
             if [ "$ALL_MERGE" = true ]; then
@@ -120,6 +126,12 @@ for dir in "${sync_dirs[@]}"; do
     for file in $(ls -A "boilerplate/$dir"); do
       if [ -f "boilerplate/$dir/$file" ]; then
         if [ -f "$dir/$file" ]; then
+          # Check for diff
+          git diff --no-index --quiet "boilerplate/$dir/$file" "$dir/$file"
+          if [ $? -eq 0 ]; then
+            echo -e "${YELLOW}⏭️ $dir/$file: no changes, skipping.${NC}"
+            continue
+          fi
           echo -e "${BLUE}📝 $dir/$file diff:${NC}"
           git diff --no-index "boilerplate/$dir/$file" "$dir/$file" || true
           if [ "$ALL_MERGE" = true ]; then

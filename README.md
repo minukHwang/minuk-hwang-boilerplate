@@ -48,6 +48,16 @@ git submodule add https://github.com/minukHwang/minuk-hwang-boilerplate.git boil
 
 ### 2. Manual Sync/Update Command
 
+> **Note:**
+> If you see a `Permission denied` error when running the sync scripts, make them executable first:
+>
+> ```bash
+> chmod +x ./scripts/sync-boilerplate.sh
+> chmod +x ./scripts/sync-to-boilerplate.sh
+> ```
+
+<br/>
+
 ```bash
 pnpm sync:boilerplate
 # or

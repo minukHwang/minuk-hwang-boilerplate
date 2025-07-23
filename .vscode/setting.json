@@ -1,0 +1,11 @@
+{
+  "javascript.suggest.autoImports": true,
+  "typescript.suggest.autoImports": true,
+
+  "typescript.preferences.importModuleSpecifier": "shortest",
+  "javascript.preferences.importModuleSpecifier": "shortest",
+
+  "editor.tabCompletion": "on",
+
+  "typescript.organizeImports": true
+}

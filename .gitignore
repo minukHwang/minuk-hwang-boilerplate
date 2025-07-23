@@ -43,8 +43,6 @@ next-env.d.ts
 .boilerplate-backup-*
 
 # IDE
-.vscode/
- !.vscode/setting.json
 .idea/
 *.swp
 *.swo
