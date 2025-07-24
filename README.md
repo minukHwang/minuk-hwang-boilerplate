@@ -72,14 +72,16 @@ pnpm sync:boilerplate
 
 #### Example: Add a new directory to sync
 
-Edit `scripts/boilerplate-sync-dirs.txt` and add the directory name:
+Edit `scripts/boilerplate-sync-dirs.txt` and add the directory name (do not include `scripts`):
 
 ```
 .husky
-scripts
 .github
 .vscode
 ```
+
+> **Note:**
+> The `scripts/` directory is always checked and merged first before syncing other directories. If any changes are merged or copied, you will be asked to re-run the sync script. Do not include `scripts` in `boilerplate-sync-dirs.txt`.
 
 ---
 
@@ -160,7 +162,13 @@ git commit -m "feat: add new feature"
   A. The sync scripts interactively compare each file using git diff/merge. You can choose to merge, skip, or copy new files. No files are overwritten without your confirmation.
 
 - **Q. How do I add a new directory to sync?**  
-  A. Add the directory name to `scripts/boilerplate-sync-dirs.txt` (one per line).
+  A. Add the directory name to `scripts/boilerplate-sync-dirs.txt` (one per line, except `scripts`).
+
+- **Q. Why is scripts/ not in sync-dirs?**  
+  A. The `scripts/` directory is always pre-synced for safety and should not be listed in sync-dirs.
+
+- **Q. How do I exclude directories from sync?**  
+  A. Add the directory name to `scripts/boilerplate-ignore-dirs.txt` (one per line).
 
 - **Q. What if package.json merging causes issues?**  
   A. You will see a diff and can choose to merge or skip. If you merge and there are issues, you can always restore from git history.
