@@ -68,21 +68,13 @@ is_ignored_dir() {
 # --- Helper: normalize file permissions for comparison ---
 normalize_permissions() {
   local file="$1"
-  # Set consistent permissions (644 for files, 755 for directories)
+  # Set consistent permissions (rw-r--r-- for files, rwxr-xr-x for directories)
   if [ -f "$file" ]; then
-    chmod 644 "$file" 2>/dev/null || true
+    chmod u=rw,go=r "$file" 2>/dev/null || true
   elif [ -d "$file" ]; then
-    chmod 755 "$file" 2>/dev/null || true
+    chmod u=rwx,go=rx "$file" 2>/dev/null || true
   fi
 }
-
-# Auto-add submodule if not present
-if [ ! -d "boilerplate" ]; then
-    log "Boilerplate submodule not found. Adding automatically."
-    git submodule add https://github.com/minukHwang/minuk-hwang-boilerplate.git boilerplate
-fi
-
-log "🔄 Starting boilerplate synchronization (git diff/merge)..."
 
 # Output color variables
 RED='\033[0;31m'
@@ -92,7 +84,15 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Check if boilerplate submodule exists
+# Auto-add submodule if not present
+if [ ! -d "boilerplate" ]; then
+    log "Boilerplate submodule not found. Adding automatically."
+    git submodule add https://github.com/minukHwang/minuk-hwang-boilerplate.git boilerplate
+fi
+
+log "🔄 Starting boilerplate synchronization (git diff/merge)..."
+
+# Check if boilerplate submodule exists (after auto-add attempt)
 if [ ! -d "boilerplate" ]; then
     echo -e "${RED}❌ Boilerplate submodule not found!${NC}"
     echo -e "${YELLOW}💡 To add boilerplate as submodule, run:${NC}"
