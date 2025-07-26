@@ -73,8 +73,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
-PINK='\033[0;35m'
-GRAY='\033[0;37m'
+ORANGE='\033[0;33m'
 NC='\033[0m' # No Color
 
 # Auto-add submodule if not present
@@ -111,7 +110,7 @@ if [ -d "boilerplate/scripts" ]; then
     
     # Check if this file should be ignored
     if is_ignored_dir "scripts/$relpath"; then
-      echo -e "${GRAY}⏭️ scripts/$relpath: ${PINK}ignored${GRAY}, skipping.${NC}"
+      echo -e "${ORANGE}⏭️ Ignored${YELLOW}: scripts/$relpath skipping${NC}"
       continue
     fi
     
@@ -129,8 +128,14 @@ if [ -d "boilerplate/scripts" ]; then
           echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
           has_changes=true
           pre_sync_changes=true
+          
+          # If sync-boilerplate.sh was merged, exit immediately
+          if [ "$relpath" = "sync-boilerplate.sh" ]; then
+            echo -e "\n${YELLOW}⚠️ sync-boilerplate.sh was updated. Please re-run the script to continue with the latest version.${NC}"
+            exit 0
+          fi
         else
-          echo -e "${GRAY}⏭️ scripts/$relpath ${YELLOW}skipped${NC}"
+          echo -e "${YELLOW}⏭️ scripts/$relpath skipped${NC}"
         fi
       fi
     else
@@ -142,6 +147,12 @@ if [ -d "boilerplate/scripts" ]; then
         echo -e "${GREEN}🆕 scripts/$relpath copied from boilerplate${NC}"
         has_changes=true
         pre_sync_changes=true
+        
+        # If sync-boilerplate.sh was copied, exit immediately
+        if [ "$relpath" = "sync-boilerplate.sh" ]; then
+          echo -e "\n${YELLOW}⚠️ sync-boilerplate.sh was copied. Please re-run the script to continue with the latest version.${NC}"
+          exit 0
+        fi
       else
         echo -e "${YELLOW}⏭️ scripts/$relpath copy skipped${NC}"
       fi
@@ -157,12 +168,12 @@ fi
 for file in $(ls -A boilerplate); do
     # Skip directories that are in ignore_dirs
     if [ -d "boilerplate/$file" ] && is_ignored_dir "$file"; then
-        echo -e "${GRAY}⏭️ $file: ${PINK}ignored${GRAY}, skipping.${NC}"
+        echo -e "${ORANGE}⏭️ Ignored${YELLOW}: $file skipping${NC}"
         continue
     fi
     # Skip files that are in ignore_dirs
     if [ -f "boilerplate/$file" ] && is_ignored_dir "$file"; then
-        echo -e "${GRAY}⏭️ $file: ${PINK}ignored${GRAY}, skipping.${NC}"
+        echo -e "${ORANGE}⏭️ Ignored${YELLOW}: $file skipping${NC}"
         continue
     fi
     if [ -f "boilerplate/$file" ]; then
@@ -173,7 +184,7 @@ for file in $(ls -A boilerplate); do
         if [ -f "$file" ]; then
           # Check for diff using cmp (content only, ignores permissions)
           if cmp -s "boilerplate/$file" "$file" 2>/dev/null; then
-            echo -e "${GRAY}⏭️ $file: ${GREEN}no changes${GRAY}, skipping.${NC}"
+            echo -e "${GREEN}⏭️ No Changes${YELLOW}: $file skipping${NC}"
             continue
           fi
           echo -e "${BLUE}📝 $file diff:${NC}"
@@ -192,7 +203,7 @@ for file in $(ls -A boilerplate); do
               echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
               has_changes=true
             else
-              echo -e "${GRAY}⏭️ $file ${YELLOW}skipped${NC}"
+              echo -e "${YELLOW}⏭️ $file skipped${NC}"
             fi
           fi
         else
@@ -204,7 +215,7 @@ for file in $(ls -A boilerplate); do
             echo -e "${GREEN}🆕 $file copied from boilerplate${NC}"
             has_changes=true
           else
-            echo -e "${GRAY}⏭️ $file copy ${YELLOW}skipped${NC}"
+            echo -e "${YELLOW}⏭️ $file copy skipped${NC}"
           fi
         fi
     fi
@@ -225,7 +236,7 @@ fi
 for dir in "${sync_dirs[@]}"; do
   if [ -d "boilerplate/$dir" ]; then
     if is_ignored_dir "$dir"; then
-      echo -e "${GRAY}⏭️ $dir: ${PINK}ignored${GRAY}, skipping.${NC}"
+      echo -e "${ORANGE}⏭️ Ignored${YELLOW}: $dir skipping${NC}"
       continue
     fi
     # --file option (directory or specific file)
@@ -253,7 +264,7 @@ for dir in "${sync_dirs[@]}"; do
               echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
               has_changes=true
             else
-              echo -e "${GRAY}⏭️ $dir/$target_file ${YELLOW}skipped${NC}"
+              echo -e "${YELLOW}⏭️ $dir/$target_file skipped${NC}"
             fi
           fi
         else
@@ -265,7 +276,7 @@ for dir in "${sync_dirs[@]}"; do
             echo -e "${GREEN}🆕 $dir/$target_file copied from boilerplate${NC}"
             has_changes=true
           else
-            echo -e "${GRAY}⏭️ $dir/$target_file copy ${YELLOW}skipped${NC}"
+            echo -e "${YELLOW}⏭️ $dir/$target_file copy skipped${NC}"
           fi
         fi
         continue
@@ -285,7 +296,7 @@ for dir in "${sync_dirs[@]}"; do
         esac
       done
       if $skip; then
-        echo -e "${GRAY}⏭️ $dir/$relpath: ${PINK}ignored${GRAY}, skipping.${NC}"
+        echo -e "${ORANGE}⏭️ Ignored${YELLOW}: $dir/$relpath skipping${NC}"
         continue
       fi
       dest_file="$dir/$relpath"
@@ -293,7 +304,7 @@ for dir in "${sync_dirs[@]}"; do
       if [ -f "$dest_file" ]; then
         # Check for diff using cmp (content only, ignores permissions)
         if cmp -s "$src_file" "$dest_file" 2>/dev/null; then
-          echo -e "${GRAY}⏭️ $dir/$relpath: ${GREEN}no changes${GRAY}, skipping.${NC}"
+          echo -e "${GREEN}⏭️ No Changes${YELLOW}: $dir/$relpath skipping${NC}"
           continue
         fi
         echo -e "${BLUE}📝 $dir/$relpath diff:${NC}"
@@ -312,7 +323,7 @@ for dir in "${sync_dirs[@]}"; do
             echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
             has_changes=true
           else
-            echo -e "${GRAY}⏭️ $dir/$relpath ${YELLOW}skipped${NC}"
+            echo -e "${YELLOW}⏭️ $dir/$relpath skipped${NC}"
           fi
         fi
       else
@@ -323,7 +334,7 @@ for dir in "${sync_dirs[@]}"; do
           echo -e "${GREEN}🆕 $dir/$relpath copied from boilerplate${NC}"
           has_changes=true
         else
-          echo -e "${GRAY}⏭️ $dir/$relpath copy ${YELLOW}skipped${NC}"
+          echo -e "${YELLOW}⏭️ $dir/$relpath copy skipped${NC}"
         fi
       fi
     done
