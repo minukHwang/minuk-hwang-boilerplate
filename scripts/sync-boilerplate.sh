@@ -107,8 +107,8 @@ if [ -d "boilerplate/scripts" ]; then
     relpath="${src_file#boilerplate/scripts/}"
     dest_file="scripts/$relpath"
     if [ -f "$dest_file" ]; then
-      # Check for diff, ignoring permission changes
-      if ! git diff --no-index --quiet "$src_file" "$dest_file" 2>/dev/null | grep -v "^old mode\|^new mode" | grep -q .; then
+      # Check for diff using cmp (content only, ignores permissions)
+      if ! cmp -s "$src_file" "$dest_file" 2>/dev/null; then
         echo -e "${YELLOW}⚠️ scripts/$relpath has changes between boilerplate and your project.${NC}"
         echo -e "${BLUE}📝 scripts/$relpath diff:${NC}"
         git --no-pager diff --no-index --color=always "$src_file" "$dest_file" || true
@@ -160,8 +160,8 @@ for file in $(ls -A boilerplate); do
             continue
         fi
         if [ -f "$file" ]; then
-          # Check for diff, ignoring permission changes
-          if git diff --no-index --quiet "boilerplate/$file" "$file" 2>/dev/null | grep -v "^old mode\|^new mode" | grep -q .; then
+          # Check for diff using cmp (content only, ignores permissions)
+          if cmp -s "boilerplate/$file" "$file" 2>/dev/null; then
             echo -e "${YELLOW}⏭️ $file: no changes, skipping.${NC}"
             continue
           fi
@@ -278,8 +278,8 @@ for dir in "${sync_dirs[@]}"; do
       dest_file="$dir/$relpath"
       mkdir -p "$(dirname "$dest_file")"
       if [ -f "$dest_file" ]; then
-        # Check for diff first, ignoring permission changes
-        if git diff --no-index --quiet "$src_file" "$dest_file" 2>/dev/null | grep -v "^old mode\|^new mode" | grep -q .; then
+        # Check for diff using cmp (content only, ignores permissions)
+        if cmp -s "$src_file" "$dest_file" 2>/dev/null; then
           echo -e "${YELLOW}⏭️ $dir/$relpath: no changes, skipping.${NC}"
           continue
         fi
