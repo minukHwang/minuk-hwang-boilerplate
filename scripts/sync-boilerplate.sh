@@ -65,16 +65,7 @@ is_ignored_dir() {
   return 1
 }
 
-# --- Helper: normalize file permissions for comparison ---
-normalize_permissions() {
-  local file="$1"
-  # Set consistent permissions (rw-r--r-- for files, rwxr-xr-x for directories)
-  if [ -f "$file" ]; then
-    chmod u=rw,go=r "$file" 2>/dev/null || true
-  elif [ -d "$file" ]; then
-    chmod u=rwx,go=rx "$file" 2>/dev/null || true
-  fi
-}
+
 
 # Output color variables
 RED='\033[0;31m'
@@ -116,7 +107,8 @@ if [ -d "boilerplate/scripts" ]; then
     relpath="${src_file#boilerplate/scripts/}"
     dest_file="scripts/$relpath"
     if [ -f "$dest_file" ]; then
-      if ! git diff --no-index --quiet "$src_file" "$dest_file" 2>/dev/null; then
+      # Check for diff, ignoring permission changes
+      if ! git diff --no-index --quiet "$src_file" "$dest_file" 2>/dev/null | grep -v "^old mode\|^new mode" | grep -q .; then
         echo -e "${YELLOW}⚠️ scripts/$relpath has changes between boilerplate and your project.${NC}"
         echo -e "${BLUE}📝 scripts/$relpath diff:${NC}"
         git --no-pager diff --no-index --color=always "$src_file" "$dest_file" || true
@@ -138,7 +130,6 @@ if [ -d "boilerplate/scripts" ]; then
       if [ "$yn" = "y" ]; then
         mkdir -p "$(dirname "$dest_file")"
         cp "$src_file" "$dest_file"
-        normalize_permissions "$dest_file"
         echo -e "${GREEN}🆕 scripts/$relpath copied from boilerplate${NC}"
         has_changes=true
         pre_sync_changes=true
@@ -169,13 +160,13 @@ for file in $(ls -A boilerplate); do
             continue
         fi
         if [ -f "$file" ]; then
-          # Check for diff
-          if git diff --no-index --quiet "boilerplate/$file" "$file" 2>/dev/null; then
+          # Check for diff, ignoring permission changes
+          if git diff --no-index --quiet "boilerplate/$file" "$file" 2>/dev/null | grep -v "^old mode\|^new mode" | grep -q .; then
             echo -e "${YELLOW}⏭️ $file: no changes, skipping.${NC}"
             continue
           fi
           echo -e "${BLUE}📝 $file diff:${NC}"
-          git --no-pager diff --no-index --color=always "boilerplate/$file" "$file" || true
+          git --no-pager diff --no-index --color=always "boilerplate/$file" "$file" | grep -v "^old mode\|^new mode" || true
           if [ "$ALL_MERGE" = true ]; then
             git merge-file "$file" "$file" "boilerplate/$file"
             echo -e "${GREEN}🔀 $file merged!${NC}"
@@ -199,7 +190,6 @@ for file in $(ls -A boilerplate); do
             read -p "" yn
             if [ "$yn" = "y" ]; then
                 cp "boilerplate/$file" .
-                normalize_permissions "$file"
                 echo -e "${GREEN}🆕 $file copied from boilerplate${NC}"
                 has_changes=true
             else
@@ -236,7 +226,7 @@ for dir in "${sync_dirs[@]}"; do
         target_file="${ONLY_FILE#*/}"
         if [ -f "boilerplate/$dir/$target_file" ]; then
           echo -e "${BLUE}📝 $dir/$target_file diff:${NC}"
-          git --no-pager diff --no-index --color=always "boilerplate/$dir/$target_file" "$dir/$target_file" || true
+          git --no-pager diff --no-index --color=always "boilerplate/$dir/$target_file" "$dir/$target_file" | grep -v "^old mode\|^new mode" || true
           if [ "$ALL_MERGE" = true ]; then
             git merge-file "$dir/$target_file" "$dir/$target_file" "boilerplate/$dir/$target_file"
             echo -e "${GREEN}🔀 $dir/$target_file merged!${NC}"
@@ -260,7 +250,6 @@ for dir in "${sync_dirs[@]}"; do
           if [ "$yn" = "y" ]; then
             mkdir -p "$(dirname "$dir/$target_file")"
             cp "boilerplate/$dir/$target_file" "$dir/$target_file"
-            normalize_permissions "$dir/$target_file"
             echo -e "${GREEN}🆕 $dir/$target_file copied from boilerplate${NC}"
             has_changes=true
           else
@@ -289,13 +278,13 @@ for dir in "${sync_dirs[@]}"; do
       dest_file="$dir/$relpath"
       mkdir -p "$(dirname "$dest_file")"
       if [ -f "$dest_file" ]; then
-        # Check for diff first
-        if git diff --no-index --quiet "$src_file" "$dest_file" 2>/dev/null; then
+        # Check for diff first, ignoring permission changes
+        if git diff --no-index --quiet "$src_file" "$dest_file" 2>/dev/null | grep -v "^old mode\|^new mode" | grep -q .; then
           echo -e "${YELLOW}⏭️ $dir/$relpath: no changes, skipping.${NC}"
           continue
         fi
         echo -e "${BLUE}📝 $dir/$relpath diff:${NC}"
-        git --no-pager diff --no-index --color=always "$src_file" "$dest_file" || true
+        git --no-pager diff --no-index --color=always "$src_file" "$dest_file" | grep -v "^old mode\|^new mode" || true
         if [ "$ALL_MERGE" = true ]; then
           git merge-file "$dest_file" "$dest_file" "$src_file"
           echo -e "${GREEN}🔀 $dir/$relpath merged!${NC}"
@@ -318,7 +307,6 @@ for dir in "${sync_dirs[@]}"; do
         read -p "" yn
         if [ "$yn" = "y" ]; then
           cp "$src_file" "$dest_file"
-          normalize_permissions "$dest_file"
           echo -e "${GREEN}🆕 $dir/$relpath copied from boilerplate${NC}"
           has_changes=true
         else
