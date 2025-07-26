@@ -73,7 +73,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
-ORANGE='\033[0;33m'
+PURPLE='\033[0;35m'
 NC='\033[0m' # No Color
 
 # Auto-add submodule if not present
@@ -110,7 +110,7 @@ if [ -d "boilerplate/scripts" ]; then
     
     # Check if this file should be ignored
     if is_ignored_dir "scripts/$relpath"; then
-      echo -e "${ORANGE}⏭️ Ignored${YELLOW}: scripts/$relpath skipping${NC}"
+      echo -e "${PURPLE}⏭️  Ignored${YELLOW}: scripts/$relpath skipping${NC}"
       continue
     fi
     
@@ -168,12 +168,12 @@ fi
 for file in $(ls -A boilerplate); do
     # Skip directories that are in ignore_dirs
     if [ -d "boilerplate/$file" ] && is_ignored_dir "$file"; then
-        echo -e "${ORANGE}⏭️ Ignored${YELLOW}: $file skipping${NC}"
+        echo -e "${PURPLE}⏭️  Ignored${YELLOW}: $file skipping${NC}"
         continue
     fi
     # Skip files that are in ignore_dirs
     if [ -f "boilerplate/$file" ] && is_ignored_dir "$file"; then
-        echo -e "${ORANGE}⏭️ Ignored${YELLOW}: $file skipping${NC}"
+        echo -e "${PURPLE}⏭️  Ignored${YELLOW}: $file skipping${NC}"
         continue
     fi
     if [ -f "boilerplate/$file" ]; then
@@ -184,7 +184,7 @@ for file in $(ls -A boilerplate); do
         if [ -f "$file" ]; then
           # Check for diff using cmp (content only, ignores permissions)
           if cmp -s "boilerplate/$file" "$file" 2>/dev/null; then
-            echo -e "${GREEN}⏭️ No Changes${YELLOW}: $file skipping${NC}"
+            echo -e "${GREEN}⏭️  No Changes${YELLOW}: $file skipping${NC}"
             continue
           fi
           echo -e "${BLUE}📝 $file diff:${NC}"
@@ -236,7 +236,7 @@ fi
 for dir in "${sync_dirs[@]}"; do
   if [ -d "boilerplate/$dir" ]; then
     if is_ignored_dir "$dir"; then
-      echo -e "${ORANGE}⏭️ Ignored${YELLOW}: $dir skipping${NC}"
+      echo -e "${PURPLE}⏭️  Ignored${YELLOW}: $dir skipping${NC}"
       continue
     fi
     # --file option (directory or specific file)
@@ -296,7 +296,7 @@ for dir in "${sync_dirs[@]}"; do
         esac
       done
       if $skip; then
-        echo -e "${ORANGE}⏭️ Ignored${YELLOW}: $dir/$relpath skipping${NC}"
+        echo -e "${PURPLE}⏭️  Ignored${YELLOW}: $dir/$relpath skipping${NC}"
         continue
       fi
       dest_file="$dir/$relpath"
@@ -304,7 +304,7 @@ for dir in "${sync_dirs[@]}"; do
       if [ -f "$dest_file" ]; then
         # Check for diff using cmp (content only, ignores permissions)
         if cmp -s "$src_file" "$dest_file" 2>/dev/null; then
-          echo -e "${GREEN}⏭️ No Changes${YELLOW}: $dir/$relpath skipping${NC}"
+          echo -e "${GREEN}⏭️  No Changes${YELLOW}: $dir/$relpath skipping${NC}"
           continue
         fi
         echo -e "${BLUE}📝 $dir/$relpath diff:${NC}"
