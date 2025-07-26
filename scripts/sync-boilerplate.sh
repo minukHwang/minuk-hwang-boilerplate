@@ -78,6 +78,7 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Check if boilerplate submodule exists
@@ -94,37 +95,44 @@ git submodule update --remote boilerplate
 # --- Pre-sync: Check for diffs in scripts directory and prompt for merge/copy/skip ---
 pre_sync_changes=false
 if [ -d "boilerplate/scripts" ]; then
-  find "boilerplate/scripts" -type f | while read src_file; do
+  # Store find results in array to avoid pipe issues (macOS compatible)
+  script_files=()
+  while IFS= read -r -d '' file; do
+    script_files+=("$file")
+  done < <(find "boilerplate/scripts" -type f -print0)
+  
+  for src_file in "${script_files[@]}"; do
     relpath="${src_file#boilerplate/scripts/}"
     dest_file="scripts/$relpath"
     if [ -f "$dest_file" ]; then
-      git diff --no-index --quiet "$src_file" "$dest_file" || true
-      if [ $? -ne 0 ]; then
-        pre_sync_changes=true
+      if ! git diff --no-index --quiet "$src_file" "$dest_file"; then
         echo -e "${YELLOW}⚠️ scripts/$relpath has changes between boilerplate and your project.${NC}"
         echo -e "${BLUE}📝 scripts/$relpath diff:${NC}"
-        git diff --no-index "$src_file" "$dest_file" || true
-        read -p "🤔 merge scripts/$relpath? (y/n): " yn
-                    if [ "$yn" = "y" ]; then
-              git merge-file "$dest_file" "$dest_file" "$src_file"
-              echo -e "${GREEN}🔀 scripts/$relpath merged!${NC}"
-              echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
-              has_changes=true
-            else
-              echo -e "${YELLOW}⏭️ scripts/$relpath skipped${NC}"
-            fi
+        git --no-pager diff --no-index "$src_file" "$dest_file" || true
+        echo -e "${BLUE}🤔 Merge this ${CYAN}scripts/$relpath${BLUE}? (y/n): "
+        read -p "" yn
+        if [ "$yn" = "y" ]; then
+          git merge-file "$dest_file" "$dest_file" "$src_file"
+          echo -e "${GREEN}🔀 scripts/$relpath merged!${NC}"
+          echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
+          has_changes=true
+          pre_sync_changes=true
+        else
+          echo -e "${YELLOW}⏭️ scripts/$relpath skipped${NC}"
+        fi
       fi
     else
-      read -p "🆕 copy scripts/$relpath from boilerplate? (y/n): " yn
-                  if [ "$yn" = "y" ]; then
-              mkdir -p "$(dirname "$dest_file")"
-              cp "$src_file" "$dest_file"
-              echo -e "${GREEN}🆕 scripts/$relpath copied from boilerplate${NC}"
-              has_changes=true
-            else
-              echo -e "${YELLOW}⏭️ scripts/$relpath copy skipped${NC}"
-            fi
-      pre_sync_changes=true
+      echo -e "${BLUE}🆕 Copy this ${CYAN}scripts/$relpath${BLUE}? (y/n): "
+      read -p "" yn
+      if [ "$yn" = "y" ]; then
+        mkdir -p "$(dirname "$dest_file")"
+        cp "$src_file" "$dest_file"
+        echo -e "${GREEN}🆕 scripts/$relpath copied from boilerplate${NC}"
+        has_changes=true
+        pre_sync_changes=true
+      else
+        echo -e "${YELLOW}⏭️ scripts/$relpath copy skipped${NC}"
+      fi
     fi
   done
 fi
@@ -149,33 +157,34 @@ for file in $(ls -A boilerplate); do
             continue
         fi
         if [ -f "$file" ]; then
-            # Check for diff
-            git diff --no-index --quiet "boilerplate/$file" "$file" || true
-            if [ $? -eq 0 ]; then
-                echo -e "${YELLOW}⏭️ $file: no changes, skipping.${NC}"
-                continue
-            fi
-            echo -e "${BLUE}📝 $file diff:${NC}"
-            git diff --no-index "boilerplate/$file" "$file" || true
-            if [ "$ALL_MERGE" = true ]; then
-                git merge-file "$file" "$file" "boilerplate/$file"
-                echo -e "${GREEN}🔀 $file merged!${NC}"
-                echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
-                has_changes=true
+          # Check for diff
+          if git diff --no-index --quiet "boilerplate/$file" "$file"; then
+            echo -e "${YELLOW}⏭️ $file: no changes, skipping.${NC}"
+            continue
+          fi
+          echo -e "${BLUE}📝 $file diff:${NC}"
+          git --no-pager diff --no-index "boilerplate/$file" "$file" || true
+          if [ "$ALL_MERGE" = true ]; then
+            git merge-file "$file" "$file" "boilerplate/$file"
+            echo -e "${GREEN}🔀 $file merged!${NC}"
+            echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
+            has_changes=true
+          else
+            echo -e "${BLUE}🤔 Merge this ${CYAN}$file${BLUE}? (y/n): "
+            read -p "" yn
+            if [ "$yn" = "y" ]; then
+              git merge-file "$file" "$file" "boilerplate/$file"
+              echo -e "${GREEN}🔀 $file merged!${NC}"
+              echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
+              has_changes=true
             else
-                read -p "🤔 merge? (y/n): " yn
-                if [ "$yn" = "y" ]; then
-                    git merge-file "$file" "$file" "boilerplate/$file"
-                    echo -e "${GREEN}🔀 $file merged!${NC}"
-                    echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
-                    has_changes=true
-                else
-                    echo -e "${YELLOW}⏭️ $file skipped${NC}"
-                fi
+              echo -e "${YELLOW}⏭️ $file skipped${NC}"
             fi
+          fi
         else
             # Always prompt before copying, even with --all-merge
-            read -p "🆕 copy $file from boilerplate? (y/n): " yn
+            echo -e "${BLUE}🆕 Copy this ${CYAN}$file${BLUE}? (y/n): "
+            read -p "" yn
             if [ "$yn" = "y" ]; then
                 cp "boilerplate/$file" .
                 echo -e "${GREEN}🆕 $file copied from boilerplate${NC}"
@@ -214,14 +223,15 @@ for dir in "${sync_dirs[@]}"; do
         target_file="${ONLY_FILE#*/}"
         if [ -f "boilerplate/$dir/$target_file" ]; then
           echo -e "${BLUE}📝 $dir/$target_file diff:${NC}"
-          git diff --no-index "boilerplate/$dir/$target_file" "$dir/$target_file" || true
+          git --no-pager diff --no-index "boilerplate/$dir/$target_file" "$dir/$target_file" || true
           if [ "$ALL_MERGE" = true ]; then
             git merge-file "$dir/$target_file" "$dir/$target_file" "boilerplate/$dir/$target_file"
             echo -e "${GREEN}🔀 $dir/$target_file merged!${NC}"
             echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
             has_changes=true
           else
-            read -p "🤔 merge $dir/$target_file? (y/n): " yn
+            echo -e "${BLUE}🤔 Merge this ${CYAN}$dir/$target_file${BLUE}? (y/n): "
+            read -p "" yn
             if [ "$yn" = "y" ]; then
               git merge-file "$dir/$target_file" "$dir/$target_file" "boilerplate/$dir/$target_file"
               echo -e "${GREEN}🔀 $dir/$target_file merged!${NC}"
@@ -232,15 +242,16 @@ for dir in "${sync_dirs[@]}"; do
             fi
           fi
         else
-                  read -p "🆕 copy $dir/$target_file from boilerplate? (y/n): " yn
-        if [ "$yn" = "y" ]; then
-          mkdir -p "$(dirname "$dir/$target_file")"
-          cp "boilerplate/$dir/$target_file" "$dir/$target_file"
-          echo -e "${GREEN}🆕 $dir/$target_file copied from boilerplate${NC}"
-          has_changes=true
-        else
-          echo -e "${YELLOW}⏭️ $dir/$target_file copy skipped${NC}"
-        fi
+          echo -e "${BLUE}🆕 Copy this ${CYAN}$dir/$target_file${BLUE}? (y/n): "
+          read -p "" yn
+          if [ "$yn" = "y" ]; then
+            mkdir -p "$(dirname "$dir/$target_file")"
+            cp "boilerplate/$dir/$target_file" "$dir/$target_file"
+            echo -e "${GREEN}🆕 $dir/$target_file copied from boilerplate${NC}"
+            has_changes=true
+          else
+            echo -e "${YELLOW}⏭️ $dir/$target_file copy skipped${NC}"
+          fi
         fi
         continue
       else
@@ -265,20 +276,20 @@ for dir in "${sync_dirs[@]}"; do
       mkdir -p "$(dirname "$dest_file")"
       if [ -f "$dest_file" ]; then
         # Check for diff first
-        git diff --no-index --quiet "$src_file" "$dest_file" || true
-        if [ $? -eq 0 ]; then
+        if git diff --no-index --quiet "$src_file" "$dest_file"; then
           echo -e "${YELLOW}⏭️ $dir/$relpath: no changes, skipping.${NC}"
           continue
         fi
         echo -e "${BLUE}📝 $dir/$relpath diff:${NC}"
-        git diff --no-index "$src_file" "$dest_file" || true
+        git --no-pager diff --no-index "$src_file" "$dest_file" || true
         if [ "$ALL_MERGE" = true ]; then
           git merge-file "$dest_file" "$dest_file" "$src_file"
           echo -e "${GREEN}🔀 $dir/$relpath merged!${NC}"
           echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
           has_changes=true
         else
-          read -p "🤔 merge $dir/$relpath? (y/n): " yn
+          echo -e "${BLUE}🤔 Merge this ${CYAN}$dir/$relpath${BLUE}? (y/n): "
+          read -p "" yn
           if [ "$yn" = "y" ]; then
             git merge-file "$dest_file" "$dest_file" "$src_file"
             echo -e "${GREEN}🔀 $dir/$relpath merged!${NC}"
@@ -289,7 +300,8 @@ for dir in "${sync_dirs[@]}"; do
           fi
         fi
       else
-        read -p "🆕 copy $dir/$relpath from boilerplate? (y/n): " yn
+        echo -e "${BLUE}🆕 Copy this ${CYAN}$dir/$relpath${BLUE}? (y/n): "
+        read -p "" yn
         if [ "$yn" = "y" ]; then
           cp "$src_file" "$dest_file"
           echo -e "${GREEN}🆕 $dir/$relpath copied from boilerplate${NC}"
