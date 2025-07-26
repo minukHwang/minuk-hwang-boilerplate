@@ -131,7 +131,7 @@ if [ -d "boilerplate/scripts" ]; then
           
           # If sync-boilerplate.sh was merged, exit immediately
           if [ "$relpath" = "sync-boilerplate.sh" ]; then
-            echo -e "\n${YELLOW}⚠️ sync-boilerplate.sh was updated. Please re-run the script to continue with the latest version.${NC}"
+            echo -e "\n${RED}⚠️  sync-boilerplate.sh was updated. Please re-run the script to continue with the latest version.${NC}"
             exit 0
           fi
         else
@@ -150,7 +150,7 @@ if [ -d "boilerplate/scripts" ]; then
         
         # If sync-boilerplate.sh was copied, exit immediately
         if [ "$relpath" = "sync-boilerplate.sh" ]; then
-          echo -e "\n${YELLOW}⚠️ sync-boilerplate.sh was copied. Please re-run the script to continue with the latest version.${NC}"
+          echo -e "\n${RED}⚠️  sync-boilerplate.sh was copied. Please re-run the script to continue with the latest version.${NC}"
           exit 0
         fi
       else
@@ -160,7 +160,7 @@ if [ -d "boilerplate/scripts" ]; then
   done
 fi
 if $pre_sync_changes; then
-  echo -e "\n${YELLOW}⚠️ Some files in scripts/ were merged or copied. Please re-run the sync script to ensure everything is up-to-date.${NC}"
+  echo -e "\n${RED}⚠️  Some files in scripts/ were merged or copied. Please re-run the sync script to ensure everything is up-to-date.${NC}"
   exit 0
 fi
 
