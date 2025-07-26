@@ -67,6 +67,9 @@ pnpm sync:boilerplate
 - All config files and tool directories (like `.husky`, `scripts`, etc.) are interactively compared and merged using git diff/merge.
 - For each file, you will see a diff and can choose to merge, skip, or copy new files.
 - No files or directories are overwritten without your explicit confirmation.
+- Supports the following options:
+  - `--all-merge`: Merge/copy all files without prompts
+  - `--file <filename>`: Only sync/merge the specified file or directory
 - The list of directories to sync is managed in `scripts/boilerplate-sync-dirs.txt` (one per line).
 - You can add more directories (e.g. `.github`, `.vscode`) to this file to enable syncing them as well.
 
@@ -78,6 +81,18 @@ Edit `scripts/boilerplate-sync-dirs.txt` and add the directory name (do not incl
 .husky
 .github
 .vscode
+```
+
+#### Example: Sync only a specific file
+
+```bash
+pnpm sync:boilerplate --file .eslintrc.json
+```
+
+#### Example: Merge all files without prompts
+
+```bash
+pnpm sync:boilerplate --all-merge
 ```
 
 > **Note:**

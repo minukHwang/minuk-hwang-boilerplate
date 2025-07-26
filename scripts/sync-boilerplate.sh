@@ -5,6 +5,14 @@
 
 set -e
 
+# --- Log function ---
+log() {
+  echo -e "\033[1;36m[LOG]\033[0m $1"
+}
+
+# --- Change tracking flag ---
+has_changes=false
+
 # --- Option parsing ---
 ALL_MERGE=false
 ONLY_FILE=""
@@ -34,7 +42,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# --- Read ignore dirs ---
+# --- Read ignore directories ---
 ignore_dirs=()
 if [ -f "scripts/boilerplate-ignore-dirs.txt" ]; then
   while IFS= read -r line || [ -n "$line" ]; do
@@ -46,7 +54,7 @@ else
   ignore_dirs=(".git")
 fi
 
-# --- Helper: check if dir is ignored ---
+# --- Helper: check if directory is ignored ---
 is_ignored_dir() {
   local d="$1"
   for ig in "${ignore_dirs[@]}"; do
@@ -59,11 +67,11 @@ is_ignored_dir() {
 
 # Auto-add submodule if not present
 if [ ! -d "boilerplate" ]; then
-    echo "Boilerplate submodule not found. Adding automatically."
+    log "Boilerplate submodule not found. Adding automatically."
     git submodule add https://github.com/minukHwang/minuk-hwang-boilerplate.git boilerplate
 fi
 
-echo "🔄 Starting boilerplate synchronization (git diff/merge)..."
+log "🔄 Starting boilerplate synchronization (git diff/merge)..."
 
 # Output color variables
 RED='\033[0;31m'
@@ -80,8 +88,7 @@ if [ ! -d "boilerplate" ]; then
     exit 1
 fi
 
-# Update boilerplate submodule to latest commit
-echo -e "${BLUE}📥 Updating boilerplate submodule...${NC}"
+log "📥 Updating boilerplate submodule..."
 git submodule update --remote boilerplate
 
 # --- Pre-sync: Check for diffs in scripts directory and prompt for merge/copy/skip ---
@@ -91,30 +98,32 @@ if [ -d "boilerplate/scripts" ]; then
     relpath="${src_file#boilerplate/scripts/}"
     dest_file="scripts/$relpath"
     if [ -f "$dest_file" ]; then
-      git diff --no-index --quiet "$src_file" "$dest_file"
+      git diff --no-index --quiet "$src_file" "$dest_file" || true
       if [ $? -ne 0 ]; then
         pre_sync_changes=true
         echo -e "${YELLOW}⚠️ scripts/$relpath has changes between boilerplate and your project.${NC}"
         echo -e "${BLUE}📝 scripts/$relpath diff:${NC}"
         git diff --no-index "$src_file" "$dest_file" || true
         read -p "🤔 merge scripts/$relpath? (y/n): " yn
-        if [ "$yn" = "y" ]; then
-          git merge-file "$dest_file" "$dest_file" "$src_file"
-          echo -e "${GREEN}🔀 scripts/$relpath merged!${NC}"
-          echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
-        else
-          echo -e "${YELLOW}⏭️ scripts/$relpath skipped${NC}"
-        fi
+                    if [ "$yn" = "y" ]; then
+              git merge-file "$dest_file" "$dest_file" "$src_file"
+              echo -e "${GREEN}🔀 scripts/$relpath merged!${NC}"
+              echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
+              has_changes=true
+            else
+              echo -e "${YELLOW}⏭️ scripts/$relpath skipped${NC}"
+            fi
       fi
     else
       read -p "🆕 copy scripts/$relpath from boilerplate? (y/n): " yn
-      if [ "$yn" = "y" ]; then
-        mkdir -p "$(dirname "$dest_file")"
-        cp "$src_file" "$dest_file"
-        echo -e "${GREEN}🆕 scripts/$relpath copied from boilerplate${NC}"
-      else
-        echo -e "${YELLOW}⏭️ scripts/$relpath copy skipped${NC}"
-      fi
+                  if [ "$yn" = "y" ]; then
+              mkdir -p "$(dirname "$dest_file")"
+              cp "$src_file" "$dest_file"
+              echo -e "${GREEN}🆕 scripts/$relpath copied from boilerplate${NC}"
+              has_changes=true
+            else
+              echo -e "${YELLOW}⏭️ scripts/$relpath copy skipped${NC}"
+            fi
       pre_sync_changes=true
     fi
   done
@@ -126,8 +135,12 @@ fi
 
 # --- Root files sync/merge ---
 for file in $(ls -A boilerplate); do
-    # Only skip .git or ignore_dirs
+    # Skip directories that are in ignore_dirs
     if [ -d "boilerplate/$file" ] && is_ignored_dir "$file"; then
+        continue
+    fi
+    # Skip files that are in ignore_dirs
+    if [ -f "boilerplate/$file" ] && is_ignored_dir "$file"; then
         continue
     fi
     if [ -f "boilerplate/$file" ]; then
@@ -137,7 +150,7 @@ for file in $(ls -A boilerplate); do
         fi
         if [ -f "$file" ]; then
             # Check for diff
-            git diff --no-index --quiet "boilerplate/$file" "$file"
+            git diff --no-index --quiet "boilerplate/$file" "$file" || true
             if [ $? -eq 0 ]; then
                 echo -e "${YELLOW}⏭️ $file: no changes, skipping.${NC}"
                 continue
@@ -148,12 +161,14 @@ for file in $(ls -A boilerplate); do
                 git merge-file "$file" "$file" "boilerplate/$file"
                 echo -e "${GREEN}🔀 $file merged!${NC}"
                 echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
+                has_changes=true
             else
                 read -p "🤔 merge? (y/n): " yn
                 if [ "$yn" = "y" ]; then
                     git merge-file "$file" "$file" "boilerplate/$file"
                     echo -e "${GREEN}🔀 $file merged!${NC}"
                     echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
+                    has_changes=true
                 else
                     echo -e "${YELLOW}⏭️ $file skipped${NC}"
                 fi
@@ -164,6 +179,7 @@ for file in $(ls -A boilerplate); do
             if [ "$yn" = "y" ]; then
                 cp "boilerplate/$file" .
                 echo -e "${GREEN}🆕 $file copied from boilerplate${NC}"
+                has_changes=true
             else
                 echo -e "${YELLOW}⏭️ $file copy skipped${NC}"
             fi
@@ -203,32 +219,35 @@ for dir in "${sync_dirs[@]}"; do
             git merge-file "$dir/$target_file" "$dir/$target_file" "boilerplate/$dir/$target_file"
             echo -e "${GREEN}🔀 $dir/$target_file merged!${NC}"
             echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
+            has_changes=true
           else
             read -p "🤔 merge $dir/$target_file? (y/n): " yn
             if [ "$yn" = "y" ]; then
               git merge-file "$dir/$target_file" "$dir/$target_file" "boilerplate/$dir/$target_file"
               echo -e "${GREEN}🔀 $dir/$target_file merged!${NC}"
               echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
+              has_changes=true
             else
               echo -e "${YELLOW}⏭️ $dir/$target_file skipped${NC}"
             fi
           fi
         else
-          read -p "🆕 copy $dir/$target_file from boilerplate? (y/n): " yn
-          if [ "$yn" = "y" ]; then
-            mkdir -p "$(dirname "$dir/$target_file")"
-            cp "boilerplate/$dir/$target_file" "$dir/$target_file"
-            echo -e "${GREEN}🆕 $dir/$target_file copied from boilerplate${NC}"
-          else
-            echo -e "${YELLOW}⏭️ $dir/$target_file copy skipped${NC}"
-          fi
+                  read -p "🆕 copy $dir/$target_file from boilerplate? (y/n): " yn
+        if [ "$yn" = "y" ]; then
+          mkdir -p "$(dirname "$dir/$target_file")"
+          cp "boilerplate/$dir/$target_file" "$dir/$target_file"
+          echo -e "${GREEN}🆕 $dir/$target_file copied from boilerplate${NC}"
+          has_changes=true
+        else
+          echo -e "${YELLOW}⏭️ $dir/$target_file copy skipped${NC}"
+        fi
         fi
         continue
       else
         continue
       fi
     fi
-    echo -e "\n${BLUE}🔄 Syncing $dir directory...${NC}"
+    log "🔄 Syncing $dir directory..."
     # Recursively sync all files (find)
     find "boilerplate/$dir" -type f | while read src_file; do
       relpath="${src_file#boilerplate/$dir/}"
@@ -245,18 +264,26 @@ for dir in "${sync_dirs[@]}"; do
       dest_file="$dir/$relpath"
       mkdir -p "$(dirname "$dest_file")"
       if [ -f "$dest_file" ]; then
+        # Check for diff first
+        git diff --no-index --quiet "$src_file" "$dest_file" || true
+        if [ $? -eq 0 ]; then
+          echo -e "${YELLOW}⏭️ $dir/$relpath: no changes, skipping.${NC}"
+          continue
+        fi
         echo -e "${BLUE}📝 $dir/$relpath diff:${NC}"
         git diff --no-index "$src_file" "$dest_file" || true
         if [ "$ALL_MERGE" = true ]; then
           git merge-file "$dest_file" "$dest_file" "$src_file"
           echo -e "${GREEN}🔀 $dir/$relpath merged!${NC}"
           echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
+          has_changes=true
         else
           read -p "🤔 merge $dir/$relpath? (y/n): " yn
           if [ "$yn" = "y" ]; then
             git merge-file "$dest_file" "$dest_file" "$src_file"
             echo -e "${GREEN}🔀 $dir/$relpath merged!${NC}"
             echo -e "${YELLOW}🚧 If there are conflicts, please resolve the conflict markers manually.${NC}"
+            has_changes=true
           else
             echo -e "${YELLOW}⏭️ $dir/$relpath skipped${NC}"
           fi
@@ -266,6 +293,7 @@ for dir in "${sync_dirs[@]}"; do
         if [ "$yn" = "y" ]; then
           cp "$src_file" "$dest_file"
           echo -e "${GREEN}🆕 $dir/$relpath copied from boilerplate${NC}"
+          has_changes=true
         else
           echo -e "${YELLOW}⏭️ $dir/$relpath copy skipped${NC}"
         fi
@@ -294,20 +322,25 @@ if [ ${#extra_files[@]} -gt 0 ]; then
     echo -e "${YELLOW}These files are not synced with boilerplate. Add them to boilerplate or manage them manually if needed.${NC}"
 fi
 
-echo -e "\n${GREEN}✅ Boilerplate git diff/merge sync complete!${NC}"
-echo -e "${YELLOW}💾 Please git add/commit the changed/merged files.${NC}"
-echo -e "${BLUE}💡 Next steps:${NC}"
-echo "   1. 🚧 If there are conflicts, resolve them manually."
-echo "   2. 💾 git add . && git commit -m 'chore: merge boilerplate config files'"
-echo "   3. 🚀 Test and create a PR"
 
-read -p "💾 Do you want to git add/commit/push the changes now? (y/n): " yn
-echo ""
-if [ "$yn" = "y" ]; then
-  echo -e "${GREEN}▶️ Run the following commands to commit and push your changes:${NC}"
-  echo "git add ."
-  echo "git commit -m 'chore: merge boilerplate config files'"
-  echo "git push"
+if [ "$has_changes" = true ]; then
+  echo -e "\n${GREEN}✅ Boilerplate git diff/merge sync complete!${NC}"
+  echo -e "${YELLOW}💾 Please git add/commit the changed/merged files.${NC}"
+  echo -e "${BLUE}💡 Next steps:${NC}"
+  echo "   1. 🚧 If there are conflicts, resolve them manually."
+  echo "   2. 💾 git add . && git commit -m 'chore: merge boilerplate config files'"
+  echo "   3. 🚀 Test and create a PR"
+
+  read -p "💾 Do you want to git add/commit/push the changes now? (y/n): " yn
+  echo ""
+  if [ "$yn" = "y" ]; then
+    echo -e "${GREEN}▶️ Run the following commands to commit and push your changes:${NC}"
+    echo "git add ."
+    echo "git commit -m 'chore: merge boilerplate config files'"
+    echo "git push"
+  else
+    echo -e "${YELLOW}⏭️ Skipped git commit/push.${NC}"
+  fi
 else
-  echo -e "${YELLOW}⏭️ Skipped git commit/push.${NC}"
+  echo -e "\n${BLUE}✅ Boilerplate sync complete! No changes were made. Everything is up to date!${NC}"
 fi 
