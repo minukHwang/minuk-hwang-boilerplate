@@ -185,16 +185,16 @@ for file in $(ls -A boilerplate); do
             fi
           fi
         else
-            # Always prompt before copying, even with --all-merge
-            echo -e "${BLUE}🆕 Copy this ${CYAN}$file${BLUE}? (y/n): "
-            read -p "" yn
-            if [ "$yn" = "y" ]; then
-                cp "boilerplate/$file" .
-                echo -e "${GREEN}🆕 $file copied from boilerplate${NC}"
-                has_changes=true
-            else
-                echo -e "${YELLOW}⏭️ $file copy skipped${NC}"
-            fi
+          # Always prompt before copying, even with --all-merge
+          echo -e "${BLUE}🆕 Copy this ${CYAN}$file${BLUE}? (y/n): "
+          read -p "" yn
+          if [ "$yn" = "y" ]; then
+            cp "boilerplate/$file" .
+            echo -e "${GREEN}🆕 $file copied from boilerplate${NC}"
+            has_changes=true
+          else
+            echo -e "${YELLOW}⏭️ $file copy skipped${NC}"
+          fi
         fi
     fi
     # Files only in your project but not in boilerplate are warned below
