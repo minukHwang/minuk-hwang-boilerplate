@@ -106,6 +106,13 @@ if [ -d "boilerplate/scripts" ]; then
   for src_file in "${script_files[@]}"; do
     relpath="${src_file#boilerplate/scripts/}"
     dest_file="scripts/$relpath"
+    
+    # Check if this file should be ignored
+    if is_ignored_dir "scripts/$relpath"; then
+      echo -e "${YELLOW}⏭️ scripts/$relpath: ignored, skipping.${NC}"
+      continue
+    fi
+    
     if [ -f "$dest_file" ]; then
       # Check for diff using cmp (content only, ignores permissions)
       if ! cmp -s "$src_file" "$dest_file" 2>/dev/null; then
