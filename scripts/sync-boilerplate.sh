@@ -285,8 +285,13 @@ for dir in "${sync_dirs[@]}"; do
       fi
     fi
     log "🔄 Syncing $dir directory..."
-    # Recursively sync all files (find)
-    find "boilerplate/$dir" -type f | while read src_file; do
+    # Recursively sync all files (find) - use array for macOS compatibility
+    src_files=()
+    while IFS= read -r -d '' file; do
+      src_files+=("$file")
+    done < <(find "boilerplate/$dir" -type f -print0)
+    
+    for src_file in "${src_files[@]}"; do
       relpath="${src_file#boilerplate/$dir/}"
       # Skip files/dirs in ignore_dirs
       skip=false
@@ -343,7 +348,7 @@ done
 
 # Warn about config files that exist in your project but not in boilerplate
 extra_files=()
-for file in $(ls -A); do
+while IFS= read -r -d '' file; do
     if [ -f "$file" ] && [ ! -f "boilerplate/$file" ]; then
         # Only warn for config files (filter by extension/name as needed)
         case "$file" in
@@ -352,7 +357,7 @@ for file in $(ls -A); do
                 ;;
         esac
     fi
-done
+done < <(find . -maxdepth 1 -name ".*" -o -name "*" | grep -v "^\.$" | tr '\n' '\0')
 if [ ${#extra_files[@]} -gt 0 ]; then
     echo -e "\n${YELLOW}🚧 There are config files in your project that do not exist in boilerplate:${NC}"
     for file in "${extra_files[@]}"; do
