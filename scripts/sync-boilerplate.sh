@@ -2,6 +2,7 @@
 
 # Boilerplate Synchronization Script (git diff/merge, recursive, with options)
 # Supports: --all-merge, --file <filename>, --help
+# Features: Auto-create missing directories from boilerplate-sync-dirs.txt
 
 set -e
 
@@ -234,7 +235,28 @@ if [ -f "scripts/boilerplate-sync-dirs.txt" ]; then
 fi
 
 for dir in "${sync_dirs[@]}"; do
+  # Check if directory exists in boilerplate
   if [ -d "boilerplate/$dir" ]; then
+    # Check if directory exists in current project, create if not
+    if [ ! -d "$dir" ]; then
+      echo -e "${BLUE}📁 Directory ${CYAN}$dir${BLUE} doesn't exist in your project.${NC}"
+      if [ "$ALL_MERGE" = true ]; then
+        mkdir -p "$dir"
+        echo -e "${GREEN}📁 Created directory: $dir${NC}"
+        has_changes=true
+      else
+        echo -e "${BLUE}🤔 Create directory ${CYAN}$dir${BLUE} and sync its contents? (y/n): "
+        read -p "" yn
+        if [ "$yn" = "y" ]; then
+          mkdir -p "$dir"
+          echo -e "${GREEN}📁 Created directory: $dir${NC}"
+          has_changes=true
+        else
+          echo -e "${YELLOW}⏭️ Directory creation skipped${NC}"
+          continue
+        fi
+      fi
+    fi
     if is_ignored_dir "$dir"; then
       echo -e "${PURPLE}⏭️  Ignored${YELLOW}: $dir skipping${NC}"
       continue
