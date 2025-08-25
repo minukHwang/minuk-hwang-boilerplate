@@ -6,23 +6,23 @@ module.exports = {
       2, // error level
       'always',
       [
-        'feat',     // new feature
-        'fix',      // bug fix
-        'docs',     // documentation changes
-        'style',    // code style changes (no impact on functionality)
+        'feat', // new feature
+        'fix', // bug fix
+        'docs', // documentation changes
+        'style', // code style changes (no impact on functionality)
         'refactor', // code refactoring
-        'perf',     // performance improvements
-        'test',     // test additions/modifications
-        'build',    // build system changes
-        'ci',       // CI/CD configuration changes
-        'chore',    // other tasks
-        'revert',   // revert previous commit
-        'init',     // initial setup
+        'perf', // performance improvements
+        'test', // test additions/modifications
+        'build', // build system changes
+        'ci', // CI/CD configuration changes
+        'chore', // other tasks
+        'revert', // revert previous commit
+        'init', // initial setup
       ],
     ],
     'subject-case': [0], // disable subject case rules (allow emoji usage)
     'subject-empty': [0], // allow empty subject (due to gitmoji code)
-    'type-empty': [0],    // allow empty type (due to gitmoji code)
+    'type-empty': [0], // allow empty type (due to gitmoji code)
     'start-with-gitmoji': [2, 'always'], // enforce gitmoji at the beginning
   },
   prompt: {
@@ -93,7 +93,8 @@ module.exports = {
         },
       },
       scope: {
-        description: 'Which part of the codebase is affected by this change? (e.g., component name, file path, or module)',
+        description:
+          'Which part of the codebase is affected by this change? (e.g., component name, file path, or module)',
       },
       subject: {
         description: 'Provide a concise summary of what this change accomplishes',

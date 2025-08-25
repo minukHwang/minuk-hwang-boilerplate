@@ -1,12 +1,13 @@
 # Minuk Hwang Boilerplate
 
-A modern Next.js 14 boilerplate with React 18, TypeScript, Vanilla Extract, pnpm, and comprehensive development tools.
+A modern Next.js 15 boilerplate with React 19, TypeScript, Tailwind CSS, Vanilla Extract, pnpm, and comprehensive development tools.
 
 ## Features
 
-- **Next.js 14** with App Router
-- **React 18** with latest features
+- **Next.js 15** with App Router
+- **React 19** with latest features
 - **TypeScript** for type safety
+- **Tailwind CSS v4** for utility-first styling
 - **Vanilla Extract** for CSS-in-JS
 - **pnpm** for fast package management
 - **ESLint + Prettier** for code quality
@@ -156,11 +157,17 @@ git commit -m "feat: add new feature"
 
 ```
 ├── src/
-├── .husky/
-├── commitlint.config.cjs
-├── .eslintrc.json
-├── .prettierrc
-├── tsconfig.json
+│   └── app/
+│       ├── globals.css          # Tailwind CSS v4 with layer imports
+│       ├── layout.tsx           # Root layout with React 19
+│       └── page.tsx             # Home page with Tailwind classes
+├── .husky/                      # Git hooks
+├── .vscode/                     # VS Code settings for development
+├── commitlint.config.cjs        # Commit message rules
+├── .eslintrc.json              # ESLint configuration
+├── .prettierrc                 # Prettier + Tailwind CSS sorting
+├── tsconfig.json               # TypeScript configuration
+├── postcss.config.js           # PostCSS with Tailwind v4
 ├── scripts/
 │   ├── sync-boilerplate.sh
 │   ├── sync-to-boilerplate.sh
@@ -168,6 +175,34 @@ git commit -m "feat: add new feature"
 │   └── ...
 └── boilerplate/   # submodule
 ```
+
+---
+
+## Tech Stack
+
+### Core
+
+- **Next.js 15** - React framework with App Router
+- **React 19** - Latest React with new compiler
+- **TypeScript** - Type-safe JavaScript
+
+### Styling
+
+- **Tailwind CSS v4** - Utility-first CSS framework
+- **Vanilla Extract** - CSS-in-JS with type safety
+
+### Development Tools
+
+- **pnpm** - Fast package manager
+- **ESLint** - Code linting
+- **Prettier** - Code formatting with Tailwind class sorting
+- **Husky** - Git hooks
+- **commitlint** - Commit message validation
+
+### State Management
+
+- **React Query** - Server state management
+- **gitmoji** - Auto-emoji commits
 
 ---
 

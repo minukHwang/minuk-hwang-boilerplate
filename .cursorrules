@@ -1,0 +1,44 @@
+# Cursor Auto Import Settings
+editor.codeActionsOnSave.source.addMissingImports = "explicit"
+typescript.suggest.autoImports = true
+javascript.suggest.autoImports = true
+
+# Tailwind CSS 최적화
+tailwindCSS.experimental.configFile = "src/app/globals.css"
+tailwindCSS.emmetCompletions = true
+tailwindCSS.includeLanguages.typescript = "javascript"
+tailwindCSS.includeLanguages.typescriptreact = "javascript"
+
+# 자동화 및 품질 관리
+editor.formatOnSave = true
+editor.codeActionsOnSave.source.organizeImports = "explicit"
+editor.codeActionsOnSave.source.fixAll.eslint = "explicit"
+files.autoSave = "afterDelay"
+files.autoSaveDelay = 1000
+
+# TypeScript 최적화
+typescript.preferences.includePackageJsonAutoImports = "auto"
+typescript.suggest.paths = true
+typescript.preferences.importModuleSpecifier = "relative"
+
+# 개발자 경험
+editor.quickSuggestions.other = true
+editor.quickSuggestions.strings = true
+editor.acceptSuggestionOnCommitCharacter = true
+editor.tabSize = 2
+editor.insertSpaces = true
+
+# 성능 최적화
+search.exclude["**/node_modules"] = true
+search.exclude["**/.next"] = true
+files.exclude["**/.next"] = true
+
+# Git 워크플로우 최적화
+git.enableSmartCommit = true
+git.autofetch = true
+git.confirmSync = false
+
+# Prettier 강제 사용
+editor.defaultFormatter = "esbenp.prettier-vscode"
+prettier.requireConfig = true
+prettier.useEditorConfig = false 
