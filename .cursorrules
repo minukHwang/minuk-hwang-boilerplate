@@ -3,42 +3,143 @@ editor.codeActionsOnSave.source.addMissingImports = "explicit"
 typescript.suggest.autoImports = true
 javascript.suggest.autoImports = true
 
-# Tailwind CSS 최적화
+# Tailwind CSS Optimization
 tailwindCSS.experimental.configFile = "src/app/globals.css"
 tailwindCSS.emmetCompletions = true
 tailwindCSS.includeLanguages.typescript = "javascript"
 tailwindCSS.includeLanguages.typescriptreact = "javascript"
 
-# 자동화 및 품질 관리
+# Automation and Quality Management
 editor.formatOnSave = true
 editor.codeActionsOnSave.source.organizeImports = "explicit"
 editor.codeActionsOnSave.source.fixAll.eslint = "explicit"
 files.autoSave = "afterDelay"
 files.autoSaveDelay = 1000
 
-# TypeScript 최적화
+# TypeScript Optimization
 typescript.preferences.includePackageJsonAutoImports = "auto"
 typescript.suggest.paths = true
 typescript.preferences.importModuleSpecifier = "relative"
 
-# 개발자 경험
+# Developer Experience
 editor.quickSuggestions.other = true
 editor.quickSuggestions.strings = true
 editor.acceptSuggestionOnCommitCharacter = true
 editor.tabSize = 2
 editor.insertSpaces = true
 
-# 성능 최적화
+# Performance Optimization
 search.exclude["**/node_modules"] = true
 search.exclude["**/.next"] = true
 files.exclude["**/.next"] = true
 
-# Git 워크플로우 최적화
+# Git Workflow Optimization
 git.enableSmartCommit = true
 git.autofetch = true
 git.confirmSync = false
 
-# Prettier 강제 사용
+# Prettier Enforcement
 editor.defaultFormatter = "esbenp.prettier-vscode"
 prettier.requireConfig = true
-prettier.useEditorConfig = false 
+prettier.useEditorConfig = false
+
+# === DEVELOPMENT RULES ===
+
+# 1. Language Rules
+# All comments, README, and documentation must be in English
+# Korean is only for user conversations
+
+# 2. Package Manager
+# Use pnpm for all package management operations
+# pnpm add, pnpm remove, pnpm update, pnpm install
+
+# 3. Tech Stack Awareness
+# Current stack: Next.js 15, React 19, TypeScript, Tailwind CSS v4, Vanilla Extract
+# Use appropriate patterns and best practices for this stack
+
+# 4. Code Style Guidelines
+# - Use TypeScript for all new files
+# - Prefer functional components with hooks
+# - Use Tailwind CSS for styling when possible
+# - Use Vanilla Extract for complex CSS-in-JS needs
+# - Follow ESLint and Prettier rules strictly
+
+# 5. File Naming Conventions
+# - Components: PascalCase (e.g., UserProfile.tsx)
+# - Utilities: camelCase (e.g., formatDate.ts)
+# - Constants: UPPER_SNAKE_CASE (e.g., API_ENDPOINTS.ts)
+# - CSS modules: camelCase.module.css
+
+# 6. Import Organization
+# - React imports first
+# - Third-party libraries
+# - Internal components/utilities
+# - Type imports last
+
+# 7. Commit Message Rules
+# Format: type: concise description
+# Language: English only
+# Length: Maximum 72 characters
+# Style: Single line, no body
+# Gitmoji will automatically add emojis
+# Examples:
+#   feat: add user authentication system
+#   fix: resolve navigation state issue
+#   docs: update API documentation
+#   style: improve button component styling
+#   refactor: restructure component architecture
+#   perf: optimize bundle size and loading
+#   test: add unit tests for user service
+#   build: update webpack configuration
+#   ci: add GitHub Actions workflow
+#   chore: update dependencies
+
+# 8. PR Template Format
+# When creating PR descriptions, follow this structured format:
+#
+# ## 📝 **PR Description**
+#
+# ### 🎯 **Overview**
+# Brief description of what this PR implements or fixes.
+#
+# ### ✨ **Key Features**
+#
+# #### 1. **Feature Category 1**
+# - **Specific Feature**: Description of the feature
+# - **Technical Detail**: Implementation details
+# - **User Impact**: How this affects the user experience
+#
+# #### 2. **Feature Category 2**
+# - **Specific Feature**: Description of the feature
+# - **Technical Detail**: Implementation details
+# - **User Impact**: How this affects the user experience
+#
+# #### 3. **Technical Improvements**
+# - **Performance**: Any performance improvements
+# - **Code Quality**: Code refactoring or improvements
+# - **Developer Experience**: DX improvements
+#
+# ### 🔧 **Technical Details**
+# - **Dependencies**: Any new dependencies added
+# - **Breaking Changes**: Any breaking changes
+# - **Migration Guide**: If needed, migration steps
+#
+# ### 🧪 **Testing**
+# - [ ] Unit tests added/updated
+# - [ ] Integration tests added/updated
+# - [ ] Manual testing completed
+# - [ ] Cross-browser testing (if applicable)
+#
+# ### 📸 **Screenshots/Videos**
+# <!-- Add screenshots or videos if UI changes are included -->
+#
+# ### 📋 **Checklist**
+# - [ ] Code follows project style guidelines
+# - [ ] Self-review completed
+# - [ ] Documentation updated (if needed)
+# - [ ] No console errors or warnings
+# - [ ] Responsive design tested (if applicable)
+#
+# ### 🔗 **Related Issues**
+# Closes #(issue number)
+# Related to #(issue number) 
