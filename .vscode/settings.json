@@ -22,5 +22,8 @@
   "typescript.suggest.autoImports": true,
   "typescript.preferences.includePackageJsonAutoImports": "auto",
   "prettier.requireConfig": true,
-  "prettier.useEditorConfig": false
+  "prettier.useEditorConfig": false,
+  "workbench.editorAssociations": {
+    "*.svg": "default"
+  }
 }
